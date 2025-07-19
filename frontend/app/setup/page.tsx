@@ -77,25 +77,20 @@ const SQLTableVisualizer = () => {
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  // Enhanced SQL parser for multiple tables and relationships
+  // Enhanced SQL parser for multiple tables and relationships (PostgreSQL)
   const parseMultipleTables = (sql: string): DatabaseSchema => {
     try {
       const tables: TableType[] = [];
       const relationships: Relationship[] = [];
-      
-      // Split SQL into individual CREATE TABLE statements
-      const statements = sql.split(/CREATE\s+TABLE/i).filter(s => s.trim());
-      
-      // Add back CREATE TABLE to each statement (except the first empty one)
-      const createStatements = statements.slice(1).map(s => 'CREATE TABLE' + s);
-      
+      // Use regex to match all CREATE TABLE ... (...); blocks
+      const createTableRegex = /CREATE\s+TABLE[\s\S]*?\([^;]*\)[\s\S]*?;/gi;
+      const createStatements = sql.match(createTableRegex) || [];
       createStatements.forEach(statement => {
         const table = parseCreateTable(statement);
         if (table) {
           tables.push(table);
         }
       });
-      
       // Extract relationships from foreign key constraints
       tables.forEach(table => {
         table.columns.forEach((column: Column) => {
@@ -109,13 +104,12 @@ const SQLTableVisualizer = () => {
             });
           }
         });
-        
         // Check table-level foreign key constraints
         table.constraints.forEach((constraint: Constraint) => {
           if (constraint.type === 'FOREIGN KEY' && constraint.references) {
             relationships.push({
               fromTable: table.tableName,
-              fromColumn: constraint.column || '', // Ensure column is string
+              fromColumn: constraint.column || '',
               toTable: constraint.references.table,
               toColumn: constraint.references.column,
               type: 'foreign_key'
@@ -123,44 +117,37 @@ const SQLTableVisualizer = () => {
           }
         });
       });
-      
       return { tables, relationships };
     } catch (err: any) {
       throw new Error(`Parse error: ${err.message}`);
     }
   };
 
+  // PostgreSQL-specific CREATE TABLE parser
   const parseCreateTable = (sql: string): TableType | null => {
     try {
       const cleanSql = sql.trim().replace(/\s+/g, ' ');
-      
-      // Extract table name
-      const tableMatch = cleanSql.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?(\w+)`?\s*\(/i);
+      // Extract table name (PostgreSQL: double quotes or unquoted)
+      const tableMatch = cleanSql.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"?(\w+)"?\s*\(/i);
       if (!tableMatch) {
         throw new Error('Invalid CREATE TABLE statement');
       }
-      
       const tableName = tableMatch[1];
-      
       // Extract the column definitions between parentheses
       const columnsMatch = cleanSql.match(/\((.*)\)(?:\s*;?)$/i);
       if (!columnsMatch) {
         throw new Error('Could not find column definitions');
       }
-      
       const columnsText = columnsMatch[1];
       const columns: Column[] = [];
       const constraints: Constraint[] = [];
-      
       let depth = 0;
       let current = '';
       let inQuotes = false;
       let quoteChar = '';
-      
       for (let i = 0; i < columnsText.length; i++) {
         const char = columnsText[i];
         const prevChar = i > 0 ? columnsText[i - 1] : '';
-        
         if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
           if (!inQuotes) {
             inQuotes = true;
@@ -170,12 +157,10 @@ const SQLTableVisualizer = () => {
             quoteChar = '';
           }
         }
-        
         if (!inQuotes) {
           if (char === '(') depth++;
           else if (char === ')') depth--;
         }
-        
         if (char === ',' && depth === 0 && !inQuotes) {
           const item = current.trim();
           if (item) {
@@ -186,24 +171,94 @@ const SQLTableVisualizer = () => {
           current += char;
         }
       }
-      
       if (current.trim()) {
         parseColumnOrConstraint(current.trim(), columns, constraints);
       }
-      
       return { tableName, columns, constraints };
-      
     } catch (err: any) {
       throw new Error(`Parse error for table: ${err.message}`);
     }
   };
-  
+
+  // PostgreSQL constraint parser
+  const parseConstraint = (constraintDef: string): Constraint => {
+    const upper = constraintDef.toUpperCase();
+    const constraint: Constraint = {
+      type: getConstraintType(constraintDef),
+      definition: constraintDef
+    };
+    // Parse FOREIGN KEY constraints (PostgreSQL: double quotes or unquoted)
+    const fkMatch = constraintDef.match(/FOREIGN\s+KEY\s*\(\s*"?(\w+)"?\s*\)\s+REFERENCES\s+"?(\w+)"?\s*\(\s*"?(\w+)"?\s*\)/i);
+    if (fkMatch) {
+      constraint.column = fkMatch[1];
+      constraint.references = {
+        table: fkMatch[2],
+        column: fkMatch[3]
+      };
+    }
+    return constraint;
+  };
+
+  // PostgreSQL column parser
+  const parseColumn = (columnDef: string): Column | null => {
+    // Remove double quotes from identifiers
+    const parts = columnDef.trim().replace(/"/g, '').split(/\s+/);
+    if (parts.length < 2) return null;
+    const name = parts[0];
+    let dataType = parts[1];
+    // Recognize SERIAL/BIGSERIAL as auto-increment
+    const isSerial = /^(SERIAL|BIGSERIAL)$/i.test(dataType);
+    const column: Column = {
+      name,
+      dataType,
+      constraints: [],
+      defaultValue: null,
+      comment: null,
+      foreignKey: null
+    };
+    if (isSerial) {
+      column.constraints.push('AUTO_INCREMENT');
+    }
+    const remaining = parts.slice(2).join(' ');
+    const remainingUpper = remaining.toUpperCase();
+    // Check for constraints
+    if (remainingUpper.includes('PRIMARY KEY')) column.constraints.push('PRIMARY KEY');
+    if (remainingUpper.includes('NOT NULL')) column.constraints.push('NOT NULL');
+    if (remainingUpper.includes('UNIQUE')) column.constraints.push('UNIQUE');
+    // Parse inline FOREIGN KEY references (PostgreSQL: double quotes or unquoted)
+    const fkMatch = remaining.match(/REFERENCES\s+"?(\w+)"?\s*\(\s*"?(\w+)"?\s*\)/i);
+    if (fkMatch) {
+      column.foreignKey = {
+        table: fkMatch[1],
+        column: fkMatch[2]
+      };
+      column.constraints.push('FOREIGN KEY');
+    }
+    // Extract default value (PostgreSQL: DEFAULT ...)
+    const defaultMatch = columnDef.match(/DEFAULT\s+([^,\s]+(?:\([^)]*\))?)/i);
+    if (defaultMatch) {
+      column.defaultValue = defaultMatch[1];
+    }
+    // Extract comment (PostgreSQL: COMMENT ON COLUMN ... is separate, so skip)
+    return column;
+  };
+
+  // Add back getConstraintType and parseColumnOrConstraint for parser logic
+  const getConstraintType = (constraint: string) => {
+    const upper = constraint.toUpperCase();
+    if (upper.includes('PRIMARY KEY')) return 'PRIMARY KEY';
+    if (upper.includes('FOREIGN KEY')) return 'FOREIGN KEY';
+    if (upper.includes('UNIQUE')) return 'UNIQUE';
+    if (upper.includes('CHECK')) return 'CHECK';
+    if (upper.includes('INDEX') || upper.match(/^KEY\s/)) return 'INDEX';
+    return 'CONSTRAINT';
+  };
+
   const parseColumnOrConstraint = (item: string, columns: Column[], constraints: Constraint[]) => {
     const constraintTypes = ['PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE', 'CHECK', 'INDEX', 'KEY'];
     const isConstraint = constraintTypes.some(type => 
       item.toUpperCase().includes(type) && !item.toUpperCase().match(/^\w+\s+\w+/)
     );
-    
     if (isConstraint) {
       const constraint = parseConstraint(item);
       constraints.push(constraint);
@@ -214,101 +269,15 @@ const SQLTableVisualizer = () => {
       }
     }
   };
-  
-  const parseConstraint = (constraintDef: string): Constraint => {
-    const upper = constraintDef.toUpperCase();
-    const constraint: Constraint = {
-      type: getConstraintType(constraintDef),
-      definition: constraintDef
-    };
-    
-    // Parse FOREIGN KEY constraints
-    if (upper.includes('FOREIGN KEY')) {
-      const fkMatch = constraintDef.match(/FOREIGN\s+KEY\s*\(\s*`?(\w+)`?\s*\)\s+REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/i);
-      if (fkMatch) {
-        constraint.column = fkMatch[1];
-        constraint.references = {
-          table: fkMatch[2],
-          column: fkMatch[3]
-        };
-      }
-    }
-    
-    return constraint;
-  };
-  
-  const getConstraintType = (constraint: string) => {
-    const upper = constraint.toUpperCase();
-    if (upper.includes('PRIMARY KEY')) return 'PRIMARY KEY';
-    if (upper.includes('FOREIGN KEY')) return 'FOREIGN KEY';
-    if (upper.includes('UNIQUE')) return 'UNIQUE';
-    if (upper.includes('CHECK')) return 'CHECK';
-    if (upper.includes('INDEX') || upper.match(/^KEY\s/)) return 'INDEX';
-    return 'CONSTRAINT';
-  };
-  
-  const parseColumn = (columnDef: string): Column | null => {
-    const parts = columnDef.trim().split(/\s+/);
-    if (parts.length < 2) return null;
-    
-    const name = parts[0].replace(/[`"']/g, '');
-    const dataType = parts[1];
-    
-    const column: Column = {
-      name,
-      dataType,
-      constraints: [],
-      defaultValue: null,
-      comment: null,
-      foreignKey: null
-    };
-    
-    const remaining = parts.slice(2).join(' ');
-    const remainingUpper = remaining.toUpperCase();
-    
-    // Check for constraints
-    if (remainingUpper.includes('PRIMARY KEY')) column.constraints.push('PRIMARY KEY');
-    if (remainingUpper.includes('NOT NULL')) column.constraints.push('NOT NULL');
-    if (remainingUpper.includes('UNIQUE')) column.constraints.push('UNIQUE');
-    if (remainingUpper.includes('AUTO_INCREMENT') || remainingUpper.includes('AUTOINCREMENT')) {
-      column.constraints.push('AUTO_INCREMENT');
-    }
-    
-    // Parse inline FOREIGN KEY references
-    const fkMatch = remaining.match(/REFERENCES\s+`?(\w+)`?\s*\(\s*`?(\w+)`?\s*\)/i);
-    if (fkMatch) {
-      column.foreignKey = {
-        table: fkMatch[1],
-        column: fkMatch[2]
-      };
-      column.constraints.push('FOREIGN KEY');
-    }
-    
-    // Extract default value
-    const defaultMatch = columnDef.match(/DEFAULT\s+([^,\s]+(?:\([^)]*\))?)/i);
-    if (defaultMatch) {
-      column.defaultValue = defaultMatch[1];
-    }
-    
-    // Extract comment
-    const commentMatch = columnDef.match(/COMMENT\s+['"`]([^'"`]+)['"`]/i);
-    if (commentMatch) {
-      column.comment = commentMatch[1];
-    }
-    
-    return column;
-  };
 
   const handleParse = () => {
     setError('');
     setParsedSchema(null);
     setSelectedTable(null);
-    
     if (!sqlInput.trim()) {
       setError('Please enter CREATE TABLE statement(s)');
       return;
     }
-    
     try {
       const result = parseMultipleTables(sqlInput);
       if (result.tables.length === 0) {
@@ -323,56 +292,41 @@ const SQLTableVisualizer = () => {
 
   const exportToJSON = () => {
     if (!parsedSchema) return;
-    
     const dataStr = JSON.stringify(parsedSchema, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
     const exportFileDefaultName = 'database_schema.json';
-    
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
   };
 
-  const sampleSQL = `CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  // PostgreSQL sample SQL
+  const sampleSQL = `CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL
+  );
 
-CREATE TABLE categories (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    customer_id INT REFERENCES customers(customer_id),
+    order_date DATE NOT NULL
+  );
 
-CREATE TABLE posts (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    user_id INT NOT NULL,
-    category_id INT,
-    status ENUM('draft', 'published') DEFAULT 'draft',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
-);
+  CREATE TABLE books (
+    book_id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    price NUMERIC(10,2) NOT NULL
+  );
 
-CREATE TABLE comments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    post_id INT NOT NULL,
-    user_id INT NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES posts(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);`;
+  CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(order_id),
+    book_id INT REFERENCES books(book_id),
+    quantity INT NOT NULL
+  );`;
 
   const getConstraintColor = (constraint: string | null) => {
     const colors: { [key: string]: string } = {
@@ -391,19 +345,19 @@ CREATE TABLE comments (
     const cols = Math.ceil(Math.sqrt(tables.length));
     const tableWidth = 280;
     const tableHeight = 200;
-    const spacing = 60;
-    
+    // Increase horizontal spacing for clearer arrows
+    const spacingX = 160; // was 60
+    const spacingY = 60;
     tables.forEach((table, index) => {
       const row = Math.floor(index / cols);
       const col = index % cols;
       positions[table.tableName] = {
-        x: col * (tableWidth + spacing) + 50,
-        y: row * (tableHeight + spacing) + 50,
+        x: col * (tableWidth + spacingX) + 50,
+        y: row * (tableHeight + spacingY) + 50,
         width: tableWidth,
         height: Math.max(tableHeight, 80 + table.columns.length * 25)
       };
     });
-    
     return positions;
   };
 
@@ -412,16 +366,12 @@ CREATE TABLE comments (
     return relationships.map((rel, index) => {
       const fromPos = positions[rel.fromTable];
       const toPos = positions[rel.toTable];
-      
       if (!fromPos || !toPos) return null;
-      
       const fromX = fromPos.x + fromPos.width;
       const fromY = fromPos.y + fromPos.height / 2;
       const toX = toPos.x;
       const toY = toPos.y + toPos.height / 2;
-      
       const midX = (fromX + toX) / 2;
-      
       return (
         <g key={index}>
           <path
@@ -435,6 +385,7 @@ CREATE TABLE comments (
             x={midX}
             y={(fromY + toY) / 2 - 10}
             textAnchor="middle"
+            style={{ fontSize: '10px' }} // scale down relationship label text
             className="text-xs fill-current text-purple-600 dark:text-purple-400"
           >
             {rel.fromColumn} → {rel.toColumn}
@@ -451,9 +402,8 @@ CREATE TABLE comments (
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <Database className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold">MySQL Schema Visualizer</h1>
+            <h1 className="text-3xl font-bold">PostgreSQL Schema Visualizer</h1>
           </div>
-          
           <div className="flex items-center gap-4">
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -461,7 +411,6 @@ CREATE TABLE comments (
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-            
             {parsedSchema && (
               <button
                 onClick={exportToJSON}
@@ -473,7 +422,6 @@ CREATE TABLE comments (
             )}
           </div>
         </div>
-
         <div className="grid xl:grid-cols-3 gap-8">
           {/* Input Section */}
           <div className="xl:col-span-1 space-y-4">
@@ -489,14 +437,12 @@ CREATE TABLE comments (
                 Load Sample
               </button>
             </div>
-            
             <textarea
               value={sqlInput}
               onChange={(e) => setSqlInput(e.target.value)}
               placeholder="Paste your CREATE TABLE statements here..."
               className="w-full h-64 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            
             <button
               onClick={handleParse}
               disabled={!sqlInput.trim()}
@@ -504,14 +450,12 @@ CREATE TABLE comments (
             >
               Parse SQL
             </button>
-            
             {error && (
               <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
-
             {/* Relationships Summary */}
             {parsedSchema && parsedSchema.relationships.length > 0 && (
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -531,7 +475,6 @@ CREATE TABLE comments (
               </div>
             )}
           </div>
-
           {/* Schema Diagram */}
           <div className="xl:col-span-2 space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -543,7 +486,6 @@ CREATE TABLE comments (
                 </span>
               )}
             </h2>
-            
             {parsedSchema ? (
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
                 {/* Schema Diagram */}
@@ -552,7 +494,6 @@ CREATE TABLE comments (
                     const positions = getTablePositions(parsedSchema.tables);
                     const maxX = Math.max(...Object.values(positions).map(p => p.x + p.width)) + 50;
                     const maxY = Math.max(...Object.values(positions).map(p => p.y + p.height)) + 50;
-                    
                     return (
                       <svg
                         ref={svgRef}
@@ -575,10 +516,8 @@ CREATE TABLE comments (
                             />
                           </marker>
                         </defs>
-                        
                         {/* Draw relationships first */}
                         {drawRelationships(parsedSchema.relationships, positions)}
-                        
                         {/* Draw tables */}
                         {parsedSchema.tables.map((table, tableIndex) => {
                           const pos = positions[table.tableName];
@@ -597,7 +536,6 @@ CREATE TABLE comments (
                                 className="cursor-pointer"
                                 onClick={() => setSelectedTable(selectedTable === table.tableName ? null : table.tableName)}
                               />
-                              
                               {/* Table header */}
                               <rect
                                 x={pos.x}
@@ -614,7 +552,6 @@ CREATE TABLE comments (
                                 height="8"
                                 fill="#3B82F6"
                               />
-                              
                               {/* Table name */}
                               <text
                                 x={pos.x + pos.width / 2}
@@ -624,7 +561,6 @@ CREATE TABLE comments (
                               >
                                 {table.tableName}
                               </text>
-                              
                               {/* Columns */}
                               {table.columns.slice(0, 8).map((column, colIndex) => (
                                 <g key={colIndex}>
@@ -636,7 +572,6 @@ CREATE TABLE comments (
                                     <tspan className="font-medium">{column.name}</tspan>
                                     <tspan className={`${darkMode ? 'fill-gray-400' : 'fill-gray-600'}`}> : {column.dataType}</tspan>
                                   </text>
-                                  
                                   {/* Primary key icon */}
                                   {column.constraints.includes('PRIMARY KEY') && (
                                     <circle
@@ -646,7 +581,6 @@ CREATE TABLE comments (
                                       fill="#F59E0B"
                                     />
                                   )}
-                                  
                                   {/* Foreign key icon */}
                                   {(column.constraints.includes('FOREIGN KEY') || column.foreignKey) && (
                                     <circle
@@ -658,7 +592,6 @@ CREATE TABLE comments (
                                   )}
                                 </g>
                               ))}
-                              
                               {/* Show more columns indicator */}
                               {table.columns.length > 8 && (
                                 <text
@@ -676,21 +609,18 @@ CREATE TABLE comments (
                     );
                   })()}
                 </div>
-                
                 {/* Table Details Panel */}
                 {selectedTable && (
                   <div className="border-t border-gray-200 dark:border-gray-700 p-6">
                     {(() => {
                       const table = parsedSchema.tables.find((t: { tableName: string; }) => t.tableName === selectedTable);
                       if (!table) return null;
-                      
                       return (
                         <div>
                           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                             <Table className="w-5 h-5" />
                             {table.tableName} Details
                           </h3>
-                          
                           <div className="grid md:grid-cols-2 gap-6">
                             {/* Columns */}
                             <div>
@@ -711,7 +641,6 @@ CREATE TABLE comments (
                                         <Key className="w-4 h-4 text-yellow-600" />
                                       )}
                                     </div>
-                                    
                                     {column.constraints.length > 0 && (
                                       <div className="flex flex-wrap gap-1 mb-1">
                                         {column.constraints.map((constraint, i) => (
@@ -724,7 +653,6 @@ CREATE TABLE comments (
                                         ))}
                                       </div>
                                     )}
-                                    
                                     {column.foreignKey && (
                                       <div className="text-xs text-purple-600 dark:text-purple-400">
                                         References: {column.foreignKey.table}.{column.foreignKey.column}
@@ -734,14 +662,12 @@ CREATE TABLE comments (
                                 ))}
                               </div>
                             </div>
-                            
                             {/* Relationships */}
                             <div>
                               {(() => {
                                 const relatedTables = parsedSchema.relationships.filter(
                                     (rel: Relationship) => rel.fromTable === selectedTable || rel.toTable === selectedTable
                                 );
-                                
                                 return (
                                   <div>
                                     <h4 className="font-semibold mb-3 text-gray-700 dark:text-gray-300">
@@ -808,4 +734,4 @@ CREATE TABLE comments (
   );
 };
 
-export default SQLTableVisualizer;
+export default SQLTableVisualizer; 
