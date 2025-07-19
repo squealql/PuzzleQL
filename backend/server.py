@@ -53,7 +53,7 @@ def UPDATE_Send(item : Item) -> bool:
         return False     
     
 @app.post("/delete_send")
-def DELTE_SEND(item : Item) -> bool:
+def DELETE_SEND(item : Item) -> bool:
     try:
         print(item)
         # sending a SQL that corresponds to SELECT
@@ -63,6 +63,16 @@ def DELTE_SEND(item : Item) -> bool:
         conn.rollback() # roll back the changes since this is not a valid command
         return False     
 
+@app.post("/create_send")
+def CREATE_SEND(item : Item) -> bool:
+    try:
+        print(item)
+        # sending a SQL that corresponds to SELECT
+        cursor.execute(item.sql)
+        return True
+    except:
+        conn.rollback() # roll back the changes since this is not a valid command
+        return False     
 
 @app.post("/commit")
 def COMMIT(item : Item):
