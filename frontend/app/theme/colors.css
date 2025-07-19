@@ -1,0 +1,79 @@
+/* 
+ * SQL Query Builder - Color Theme
+ * 
+ * This file defines the color system for the application, with two distinct categories:
+ * 1. UI Colors: Muted, subdued colors for the application interface (--ui-*)
+ * 2. Block Colors: Vibrant, eye-catching colors for the query-building blocks (--block-*)
+ */
+
+:root {
+    /* UI Colors (Muted/Subdued) */
+
+    /* Navy/Blue Family */
+    --ui-navy-950: 202 97% 15%; /* #012A4A */
+    --ui-navy-900: 228 76% 29%; /* #012494 */
+    --ui-navy-800: 228 76% 35%;
+    --ui-navy-700: 200 98% 24%; /* #01497C */
+    --ui-navy-600: 200 98% 30%;
+    --ui-navy-500: 201 61% 37%; /* #2A6F97 */
+    --ui-navy-400: 201 40% 57%; /* #61A5C2 */
+    --ui-navy-300: 186 75% 59%; /* #49D6E5 */
+    --ui-navy-200: 190 50% 78%; /* #A9D6E5 */
+    --ui-navy-100: 186 75% 85%;
+
+    /* Purple Family */
+    --ui-purple-600: 251 48% 52%; /* #6145C2 */
+    --ui-purple-500: 251 48% 60%;
+    --ui-purple-400: 251 48% 70%;
+
+    /* Earth Tones */
+    --ui-terracotta-700: 17 54% 42%;
+    --ui-terracotta-600: 17 54% 45%;
+    --ui-terracotta-500: 17 54% 48%; /* #BE5A38 */
+    --ui-terracotta-400: 17 54% 55%;
+    --ui-terracotta-300: 17 54% 65%;
+
+    /* Neutral Tones */
+    --ui-beige-300: 39 42% 85%;
+    --ui-beige-200: 39 42% 92%; /* #EAE0CC */
+    --ui-beige-100: 40 60% 95%; /* #F8F2DC */
+
+    /* Block Colors (Vibrant) */
+
+    /* Pink/Magenta Family */
+    --block-pink-600: 334 94% 55%;
+    --block-pink-500: 334 94% 68%; /* #F72585 */
+    --block-pink-400: 334 94% 75%;
+    --block-magenta-700: 318 77% 40%;
+    --block-magenta-600: 318 77% 50%; /* #B5179E */
+    --block-magenta-500: 318 77% 60%;
+
+    /* Purple Family */
+    --block-purple-800: 280 89% 35%;
+    --block-purple-700: 280 89% 38%; /* #7209B7 */
+    --block-purple-600: 280 89% 45%;
+    --block-purple-500: 280 89% 55%;
+
+    /* Indigo Family */
+    --block-indigo-800: 263 88% 33%; /* #3A0CA3 */
+    --block-indigo-700: 265 88% 36%; /* #560BAD */
+    --block-indigo-600: 267 88% 40%; /* #480CA8 */
+    --block-indigo-500: 267 88% 50%;
+
+    /* Blue Family */
+    --block-blue-700: 242 66% 45%;
+    --block-blue-600: 242 66% 50%; /* #3F37C9 */
+    --block-blue-500: 231 84% 60%; /* #4361EE */
+    --block-blue-400: 217 85% 65%; /* #4895EF */
+
+    /* Cyan Family */
+    --block-cyan-500: 190 92% 55%;
+    --block-cyan-400: 190 92% 62%; /* #4CC9F0 */
+    --block-cyan-300: 190 92% 75%;
+}
+
+/* Dark mode overrides if needed */
+.dark {
+    /* No dark mode specific overrides for custom colors at this time */
+    /* The existing dark mode theme will work alongside our custom colors */
+}
