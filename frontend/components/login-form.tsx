@@ -40,28 +40,35 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            <Card>
+            <Card className="bg-white dark:bg-ui-navy-800 border-ui-navy-200 dark:border-ui-navy-700">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Login</CardTitle>
-                    <CardDescription>Enter your email below to login to your account</CardDescription>
+                    <CardTitle className="text-2xl text-ui-navy-900 dark:text-white">Login</CardTitle>
+                    <CardDescription className="text-ui-navy-500 dark:text-ui-beige-300">Enter your email below to login to your account</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleLogin}>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email" className="text-ui-navy-800 dark:text-ui-beige-200">
+                                    Email
+                                </Label>
                                 <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                             </div>
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Link href="/auth/forgot-password" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+                                    <Label htmlFor="password" className="text-ui-navy-800 dark:text-ui-beige-200">
+                                        Password
+                                    </Label>
+                                    <Link
+                                        href="/auth/forgot-password"
+                                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-ui-navy-600 dark:text-ui-beige-300"
+                                    >
                                         Forgot your password?
                                     </Link>
                                 </div>
                                 <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                             </div>
-                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            {error && <p className="text-sm text-ui-terracotta-500">{error}</p>}
                             <Button type="submit" className="w-full" disabled={isLoading}>
                                 {isLoading ? "Logging in..." : "Login"}
                             </Button>

@@ -43,7 +43,7 @@ export default function ProjectDetailPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-96">
+            <div className="flex justify-center items-center h-96 text-ui-navy-700 dark:text-ui-beige-300">
                 <p>Loading project...</p>
             </div>
         );
@@ -54,60 +54,66 @@ export default function ProjectDetailPage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 text-ui-navy-900 dark:text-ui-beige-100">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold">{project.name}</h1>
-                    <p className="text-muted-foreground">{project.description}</p>
+                    <p className="text-ui-navy-600 dark:text-ui-beige-300">{project.description}</p>
                 </div>
                 <Link href="/projects">
-                    <Button variant="outline">Back to Projects</Button>
+                    <Button variant="outline" className="dark:text-white dark:border-ui-navy-500 dark:hover:bg-ui-navy-700">
+                        Back to Projects
+                    </Button>
                 </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Project Details Card */}
-                <Card>
+                <Card className="bg-white dark:bg-ui-navy-800 border-ui-navy-200 dark:border-ui-navy-700">
                     <CardHeader>
-                        <CardTitle>Project Details</CardTitle>
-                        <CardDescription>Information about this project</CardDescription>
+                        <CardTitle className="text-ui-navy-900 dark:text-white">Project Details</CardTitle>
+                        <CardDescription className="text-ui-navy-500 dark:text-ui-beige-300">Information about this project</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
                             <p className="font-medium">Created</p>
-                            <p className="text-sm text-muted-foreground">{new Date(project.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm text-ui-navy-600 dark:text-ui-beige-300">{new Date(project.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div>
                             <p className="font-medium">Last Updated</p>
-                            <p className="text-sm text-muted-foreground">{new Date(project.updatedAt).toLocaleDateString()}</p>
+                            <p className="text-sm text-ui-navy-600 dark:text-ui-beige-300">{new Date(project.updatedAt).toLocaleDateString()}</p>
                         </div>
                         <div>
                             <p className="font-medium">Database Connection</p>
                             {project.databaseConnection.enabled ? (
                                 <div className="flex items-center space-x-2">
-                                    <Badge variant="outline">{project.databaseConnection.type}</Badge>
-                                    <p className="text-sm text-muted-foreground truncate max-w-xs">{project.databaseConnection.connectionString}</p>
+                                    <Badge variant="outline" className="dark:text-white dark:border-ui-navy-500">
+                                        {project.databaseConnection.type}
+                                    </Badge>
+                                    <p className="text-sm text-ui-navy-600 dark:text-ui-beige-300 truncate max-w-xs">
+                                        {project.databaseConnection.connectionString}
+                                    </p>
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No database connection</p>
+                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-300">No database connection</p>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Query Builder Card */}
-                <Card>
+                <Card className="bg-white dark:bg-ui-navy-800 border-ui-navy-200 dark:border-ui-navy-700">
                     <CardHeader>
-                        <CardTitle>SQL Table Builder</CardTitle>
-                        <CardDescription>Build out the SQL Tables in your project</CardDescription>
+                        <CardTitle className="text-ui-navy-900 dark:text-white">SQL Table Builder</CardTitle>
+                        <CardDescription className="text-ui-navy-500 dark:text-ui-beige-300">Build out the SQL Tables in your project</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="bg-muted rounded-md p-8 flex flex-col items-center justify-center h-40">
-                            <p className="text-center text-muted-foreground">Table Builder Work In Progress</p>
+                        <div className="bg-ui-beige-200 dark:bg-ui-navy-900 rounded-md p-8 flex flex-col items-center justify-center h-40">
+                            <p className="text-center text-ui-navy-600 dark:text-ui-beige-300">Table Builder Work In Progress</p>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button disabled className="w-full">
+                        <Button disabled className="w-full bg-ui-navy-700 text-white">
                             Launch Query Builder
                         </Button>
                     </CardFooter>

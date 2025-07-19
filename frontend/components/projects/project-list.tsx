@@ -43,9 +43,9 @@ export function ProjectList() {
 
     if (projects.length === 0) {
         return (
-            <div className="text-center py-12 border rounded-lg bg-muted/50">
-                <h3 className="text-lg font-medium mb-2">No projects yet</h3>
-                <p className="text-muted-foreground mb-6">Create your first SQL query builder project to get started.</p>
+            <div className="text-center py-12 border-2 border-dashed rounded-lg bg-ui-beige-200 dark:bg-ui-navy-900 border-ui-navy-200 dark:border-ui-navy-700">
+                <h3 className="text-lg font-medium text-ui-navy-800 dark:text-ui-beige-100 mb-2">No projects yet</h3>
+                <p className="text-ui-navy-600 dark:text-ui-beige-300 mb-6">Create your first SQL query builder project to get started.</p>
             </div>
         );
     }
