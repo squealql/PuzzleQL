@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PROJECT_NAME } from "@/lib/config";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Blocks, Bot, Combine, Database, Waypoints } from "lucide-react";
 
 export default function HomePage() {
@@ -39,8 +40,10 @@ export default function HomePage() {
 
             <main className="flex-1 w-full">
                 {/* Hero Section */}
-                <section className="w-full flex-grow flex items-center justify-center py-20 md:py-32 bg-ui-beige-200 dark:bg-ui-navy-900 text-center">
-                    <div className="container px-4 md:px-6">
+                <section className="relative w-full flex-grow flex items-center justify-center py-20 md:py-32 text-center">
+                    <Image src="/waves.png" alt="Subtle wave patterns in the background" fill className="object-cover object-bottom z-0 top-20" priority />
+                    <div className="absolute inset-0 bg-ui-beige-100/80 dark:bg-ui-navy-950/80 z-10"></div>
+                    <div className="relative z-20 container px-4 md:px-6">
                         <div className="grid gap-6 lg:grid-cols-1 items-center">
                             <div className="flex flex-col justify-center space-y-4">
                                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-ui-navy-800 to-ui-navy-300">
