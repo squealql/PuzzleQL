@@ -1,2 +1,0 @@
-# mysqueal
-sql diagramming tool
