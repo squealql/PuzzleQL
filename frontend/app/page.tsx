@@ -1,4 +1,5 @@
 import { AuthButton } from "@/components/auth-button";
+import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { PROJECT_NAME } from "@/lib/config";
@@ -9,7 +10,7 @@ import { ArrowRight, Blocks, Bot, Combine, Database, Waypoints } from "lucide-re
 export default function HomePage() {
     return (
         <div className="flex flex-col min-h-screen bg-ui-beige-100 dark:bg-ui-navy-950">
-            <header className="w-full">
+            <SiteHeader>
                 <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 bg-white dark:bg-ui-navy-900">
                     <div className="w-full max-w-7xl flex justify-between items-center p-3 text-sm">
                         <div className="flex items-center gap-4">
@@ -34,16 +35,16 @@ export default function HomePage() {
                         </div>
                     </div>
                 </nav>
-            </header>
+            </SiteHeader>
 
             <main className="flex-1 w-full">
                 {/* Hero Section */}
-                <section className="w-full py-20 md:py-32 bg-ui-beige-200 dark:bg-ui-navy-900 text-center">
+                <section className="w-full flex-grow flex items-center justify-center py-20 md:py-32 bg-ui-beige-200 dark:bg-ui-navy-900 text-center">
                     <div className="container px-4 md:px-6">
                         <div className="grid gap-6 lg:grid-cols-1 items-center">
                             <div className="flex flex-col justify-center space-y-4">
                                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-ui-navy-800 to-ui-navy-300">
-                                    PuzzleQL
+                                    {PROJECT_NAME}
                                 </h1>
                                 <p className="max-w-[600px] text-ui-navy-700 dark:text-ui-beige-300 md:text-xl mx-auto">
                                     Build complex SQL queries with an intuitive drag-and-drop interface. No more syntax errors, just seamless data exploration.
@@ -69,10 +70,10 @@ export default function HomePage() {
                 </section>
 
                 {/* Features Section */}
-                <section id="features" className="w-full py-16 md:py-24">
+                <section id="features" className="w-full py-16 md:py-24 flex justify-center">
                     <div className="container px-4 md:px-6">
                         <h2 className="text-3xl font-bold tracking-tighter text-center mb-12 text-ui-navy-900 dark:text-white">Why {PROJECT_NAME}?</h2>
-                        <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3">
+                        <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3 justify-center">
                             <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
                                 <div className="mx-auto p-3 rounded-full bg-block-pink-500 text-white mb-2">
                                     <Blocks className="h-6 w-6" />
@@ -115,8 +116,15 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Clear Data Flow Visualization</h3>
                                 <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Understand your data flow with our clear and interactive query visualization tools.
+                                    Visualize and understand your data flow with clear, interactive query tools.
                                 </p>
+                            </div>
+                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
+                                <div className="mx-auto p-3 rounded-full bg-block-cyan-500 text-white mb-2">
+                                    <Blocks className="h-6 w-6" />
+                                </div>
+                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Export to Code</h3>
+                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">Export your queries to SQL, Python, JavaScript, and more.</p>
                             </div>
                         </div>
                     </div>
