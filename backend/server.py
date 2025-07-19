@@ -25,6 +25,10 @@ def root():
 class Item(BaseModel):
     sql: str
 
+class CreateItem(BaseModel):
+    sql: str
+    userid: str
+
 @app.post("/select_send")
 def SELECT_Send(item : Item) -> bool:
     try:
@@ -64,7 +68,7 @@ def DELETE_SEND(item : Item) -> bool:
         return False     
 
 @app.post("/create_send")
-def CREATE_SEND(item : Item) -> bool:
+def CREATE_SEND(item : CreateItem) -> bool:
     try:
         print(item)
         # sending a SQL that corresponds to SELECT

@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import { BlocklyWorkspace } from "react-blockly";
 
 import { createClient } from "@/lib/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
+import BlockCanvas from "./blockcanvas";
 
 export default async function ProtectedPage() {
   const blockslist = [];
@@ -21,11 +23,7 @@ export default async function ProtectedPage() {
           {}
         </div>
       </div>
-      <div className="bg-green-500 w-[50%] h-full m-2 rounded-sm">
-        <canvas>
-
-        </canvas>
-      </div>
+      <BlockCanvas></BlockCanvas>
       <div className="bg-purple-500 w-[25%] h-full m-2 rounded-sm">
       </div>
     </div>
