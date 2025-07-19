@@ -302,44 +302,31 @@ const SQLTableVisualizer = () => {
   };
 
   // PostgreSQL sample SQL
-  const sampleSQL = `CREATE TABLE "users" (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  const sampleSQL = `CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL
+  );
 
-CREATE TABLE "categories" (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    customer_id INT REFERENCES customers(customer_id),
+    order_date DATE NOT NULL
+  );
 
-CREATE TABLE "posts" (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    user_id INTEGER NOT NULL,
-    category_id INTEGER,
-    status VARCHAR(20) DEFAULT 'draft',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES "users"(id),
-    CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES "categories"(id)
-);
+  CREATE TABLE books (
+    book_id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    price NUMERIC(10,2) NOT NULL
+  );
 
-CREATE TABLE "comments" (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_post FOREIGN KEY (post_id) REFERENCES "posts"(id),
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES "users"(id)
-);`;
+  CREATE TABLE order_items (
+    order_item_id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(order_id),
+    book_id INT REFERENCES books(book_id),
+    quantity INT NOT NULL
+  );`;
 
   const getConstraintColor = (constraint: string | null) => {
     const colors: { [key: string]: string } = {
@@ -358,13 +345,15 @@ CREATE TABLE "comments" (
     const cols = Math.ceil(Math.sqrt(tables.length));
     const tableWidth = 280;
     const tableHeight = 200;
-    const spacing = 60;
+    // Increase horizontal spacing for clearer arrows
+    const spacingX = 160; // was 60
+    const spacingY = 60;
     tables.forEach((table, index) => {
       const row = Math.floor(index / cols);
       const col = index % cols;
       positions[table.tableName] = {
-        x: col * (tableWidth + spacing) + 50,
-        y: row * (tableHeight + spacing) + 50,
+        x: col * (tableWidth + spacingX) + 50,
+        y: row * (tableHeight + spacingY) + 50,
         width: tableWidth,
         height: Math.max(tableHeight, 80 + table.columns.length * 25)
       };
@@ -396,6 +385,7 @@ CREATE TABLE "comments" (
             x={midX}
             y={(fromY + toY) / 2 - 10}
             textAnchor="middle"
+            style={{ fontSize: '10px' }} // scale down relationship label text
             className="text-xs fill-current text-purple-600 dark:text-purple-400"
           >
             {rel.fromColumn} → {rel.toColumn}
