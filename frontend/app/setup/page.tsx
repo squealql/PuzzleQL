@@ -37,6 +37,7 @@ interface Relationship {
 interface DatabaseSchema {
   tables: TableType[];
   relationships: Relationship[];
+  sqlQueries:string[];
 }
 
 interface TablePosition {
@@ -88,6 +89,7 @@ const parseMultipleTables = (sql: string): DatabaseSchema => {
   try {
     const tables: TableType[] = [];
     const relationships: Relationship[] = [];
+    const sqlQueries:string[]=[];
     
     // Use regex to match all CREATE TABLE ... (...); blocks
     const createTableRegex: RegExp = /CREATE\s+TABLE[\s\S]*?\([^;]*\)[\s\S]*?;/gi;
@@ -95,11 +97,14 @@ const parseMultipleTables = (sql: string): DatabaseSchema => {
     
     if (createStatements) {
       createStatements.forEach((statement: string) => {
+        console.log(statement);
         const table: TableType | null = parseCreateTable(statement);
         if (table) {
           tables.push(table);
+          sqlQueries.push(statement);
         }
       });
+      
     }
     
     // Extract relationships from foreign key constraints
@@ -130,7 +135,7 @@ const parseMultipleTables = (sql: string): DatabaseSchema => {
       });
     });
     
-    return { tables, relationships };
+    return { tables, relationships,sqlQueries };
   } catch (err: unknown) {
     const errorMessage: string = err instanceof Error ? err.message : 'Unknown parsing error';
     throw new Error(`Parse error: ${errorMessage}`);
@@ -379,6 +384,7 @@ const SQLTableVisualizer: React.FC = () => {
   const [parsedSchema, setParsedSchema] = useState<DatabaseSchema | null>(null);
   const [error, setError] = useState<string>('');
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
+
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const handleParse = (): void => {
@@ -412,33 +418,61 @@ const SQLTableVisualizer: React.FC = () => {
     setSelectedTable(selectedTable === tableName ? null : tableName);
   };
 
-  const handleSetupProject = (): void => {
-    
-    fetch('https://example.com/api/endpoint', {
-      method: 'POST', // Specify the HTTP method
-      headers: {
-        'Content-Type': 'application/json', // Tell the server we're sending JSON
-        // Add any other headers here
-      },
-      body: JSON.stringify({
-        key1: 'value1',
-        key2: 'value2'
-      }) // Convert your data to a JSON string
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+  const handleSetupProject = async (): Promise<void> => {
+  let workingCommit = true;
+  console.log(parsedSchema?.sqlQueries);
+  if (parsedSchema?.sqlQueries) {
+    for (const tableCommand of parsedSchema.sqlQueries) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/create_send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sql: tableCommand,
+            userid: "1",
+          }),
+        });
+        
+        if (!response.ok) {
+          console.error(`HTTP error! status: ${response.status}`);
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          workingCommit = false;
+        }
+      } catch (e: any) {
+        workingCommit = false;
       }
-      return response.json(); // Parse JSON response
-    })
-    .then(data => {
-      console.log('Success:', data);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-      console.log('Setup Project clicked');
-    };
+    }
+  }
+
+  if (workingCommit) {
+    try {
+      const commitResponse = await fetch('http://127.0.0.1:8000/commit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sql: '',
+        }),
+      });
+      
+      if (!commitResponse.ok) {
+        console.error(`Commit failed! status: ${commitResponse.status}`);
+        const errorText = await commitResponse.text();
+        console.error('Commit error response:', errorText);
+      } else {
+        console.log('Database setup completed successfully!');
+      }
+    } catch (e: any) {
+      console.error('Failed to commit:', e);
+    }
+  }
+};
+    
+    
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setSqlInput(e.target.value);
