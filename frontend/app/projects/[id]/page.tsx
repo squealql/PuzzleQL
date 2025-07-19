@@ -98,12 +98,12 @@ export default function ProjectDetailPage() {
                 {/* Query Builder Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>SQL Query Builder</CardTitle>
-                        <CardDescription>Build SQL queries using block-based programming</CardDescription>
+                        <CardTitle>SQL Table Builder</CardTitle>
+                        <CardDescription>Build out the SQL Tables in your project</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="bg-muted rounded-md p-8 flex flex-col items-center justify-center h-40">
-                            <p className="text-center text-muted-foreground">Query Builder Coming Soon</p>
+                            <p className="text-center text-muted-foreground">Table Builder Work In Progress</p>
                         </div>
                     </CardContent>
                     <CardFooter>
