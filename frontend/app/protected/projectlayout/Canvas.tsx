@@ -15,7 +15,30 @@ interface CanvasProps {
   shapes?: Blocks.CodeBlockBase[];
   width?: number;
   height?: number;
+  blocksRef?: React.RefObject<any[]>;
+  toSQLRef?: React.RefObject<((block: any) => string) | null>;
 }
+
+const toSQL = (block : any) => {
+  let returnstring = ""
+  if (block.content){
+    for (let i = 0; i < block.content.length; i++){
+      if (block.content[i].input){
+        returnstring += block.content[i].inpu;
+      }
+      else{
+        if (compoundItems.includes(block.content[i].type)){
+          returnstring += toSQL(block.content[i]);
+        }else{
+          returnstring += block.content[i].text;
+        }
+      }
+      returnstring += " ";
+    }
+  }
+  return returnstring;
+};
+
 
 var currentButton = "CRUD";
 const buttonMap : {[key : string] : any[]} = {
@@ -221,7 +244,7 @@ function deepCloneBlock(block: any): any {
   return JSON.parse(JSON.stringify(block));
 }
 
-export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasProps) {
+export default function Canvas({ shapes = [], width = 0, height = 0, blocksRef, toSQLRef }: CanvasProps) {
   var allblocks = [];
   const [blocks, setBlocks] = useState(shapes);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -238,6 +261,20 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     // grab a context
     displayTag();
   }, [])
+
+  // Keep blocksRef updated with the latest blocks
+  useEffect(() => {
+    if (blocksRef) {
+      blocksRef.current = blocks;
+    }
+  }, [blocks, blocksRef]);
+
+  // Keep toSQLRef updated with the latest toSQL function
+  useEffect(() => {
+    if (toSQLRef) {
+      toSQLRef.current = toSQL;
+    }
+  }, [toSQLRef]);
 
   const updateAll = () =>{
     const ctx = canvasRef.current?.getContext("2d");
@@ -275,8 +312,6 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     });
     console.log(blocks)
     allblocks = blocks;
-    window.allblocks = blocks; // <-- Add this line
-    window.toSQL = toSQL; // <-- Add this line
   };
 
   useEffect(() => {
@@ -495,25 +530,6 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
       }
       return newBlocks;
     });
-  };
-  const toSQL = (block : any) => {
-    let returnstring = ""
-    if (block.content){
-      for (let i = 0; i < block.content.length; i++){
-        if (block.content[i].input){
-          returnstring += block.content[i].inpu;
-        }
-        else{
-          if (compoundItems.includes(block.content[i].type)){
-            returnstring += toSQL(block.content[i]);
-          }else{
-            returnstring += block.content[i].text;
-          }
-        }
-        returnstring += " ";
-      }
-    }
-    return returnstring;
   };
 
   return (
