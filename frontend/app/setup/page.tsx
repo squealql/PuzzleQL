@@ -435,10 +435,7 @@ const SQLTableVisualizer: React.FC = () => {
           }),
         });
         
-        if (!response.ok) {
-          console.error(`HTTP error! status: ${response.status}`);
-          const errorText = await response.text();
-          console.error('Error response:', errorText);
+        if (!response) {
           workingCommit = false;
         }
       } catch (e: any) {
@@ -459,10 +456,8 @@ const SQLTableVisualizer: React.FC = () => {
         }),
       });
       
-      if (!commitResponse.ok) {
-        console.error(`Commit failed! status: ${commitResponse.status}`);
-        const errorText = await commitResponse.text();
-        console.error('Commit error response:', errorText);
+      if (!commitResponse) {
+        console.error('Commit error');
       } else {
         console.log('Database setup completed successfully!');
       }
