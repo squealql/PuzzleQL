@@ -2,12 +2,13 @@ import { AuthButton } from "@/components/auth-button";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
-import { Button } from "@/components/ui/button";
 import { PROJECT_NAME } from "@/lib/config";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Blocks, Bot, Combine, Database, Waypoints } from "lucide-react";
+import { GetStartedButton, SignUpButton } from "@/components/ui/button-wrappers";
+import { BackgroundBoxesWrapper } from "@/components/ui/background-boxes-wrapper";
+import { FeatureCardsWrapper } from "@/components/ui/feature-cards-wrapper";
 
 export default function HomePage() {
     return (
@@ -56,17 +57,10 @@ export default function HomePage() {
                                 />
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <Link href="/projects">
-                                        <Button
-                                            size="lg"
-                                            className="bg-ui-navy-700 hover:bg-ui-navy-600 text-white dark:bg-ui-navy-500 dark:hover:bg-ui-navy-400"
-                                        >
-                                            Get Started <ArrowRight className="ml-2" />
-                                        </Button>
+                                        <GetStartedButton />
                                     </Link>
                                     <Link href="/auth/sign-up">
-                                        <Button size="lg" variant="outline" className="dark:text-white dark:border-ui-navy-500 dark:hover:bg-ui-navy-800">
-                                            Sign Up
-                                        </Button>
+                                        <SignUpButton />
                                     </Link>
                                 </div>
                             </div>
@@ -74,84 +68,38 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* Features Section */}
-                <section id="features" className="w-full py-16 md:py-24 flex justify-center">
-                    <div className="container px-4 md:px-6">
-                        <h2 className="text-3xl font-bold tracking-tighter text-center mb-12 text-ui-navy-900 dark:text-white">Why {PROJECT_NAME}?</h2>
-                        <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3 justify-center">
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-pink-500 text-white mb-2">
-                                    <Blocks className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Intuitive Block-Based Builder</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Visually construct queries by dragging and dropping blocks. Perfect for both beginners and seasoned developers.
-                                </p>
-                            </div>
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-magenta-600 text-white mb-2">
-                                    <Database className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Broad Database Support</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Connect to your favorite databases including PostgreSQL, MySQL, SQLite, and more.
-                                </p>
-                            </div>
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-purple-700 text-white mb-2">
-                                    <Bot className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">AI-Powered Assistance</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Leverage our intelligent assistant to optimize queries and get suggestions in real-time.
-                                </p>
-                            </div>
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-indigo-700 text-white mb-2">
-                                    <Combine className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Complex Joins Made Easy</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Effortlessly create and manage complex joins and relationships between tables.
-                                </p>
-                            </div>
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-blue-500 text-white mb-2">
-                                    <Waypoints className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Clear Data Flow Visualization</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                                    Visualize and understand your data flow with clear, interactive query tools.
-                                </p>
-                            </div>
-                            <div className="grid gap-1 text-center p-6 rounded-lg bg-white dark:bg-ui-navy-800 shadow-md">
-                                <div className="mx-auto p-3 rounded-full bg-block-cyan-500 text-white mb-2">
-                                    <Blocks className="h-6 w-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white">Export to Code</h3>
-                                <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">Export your queries to SQL, Python, JavaScript, and more.</p>
-                            </div>
+                {/* Features Section with Background Boxes */}
+                <section id="features" className="w-full py-16 md:py-24 relative overflow-hidden">
+                    <BackgroundBoxesWrapper className="absolute inset-0 z-0" containerClassName="opacity-30 scale-125" />
+                    <div className="container mx-auto px-4 md:px-6 relative z-10">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold tracking-tighter text-ui-navy-900 dark:text-white">Why {PROJECT_NAME}?</h2>
+                        </div>
+                        <div className="flex justify-center">
+                            <FeatureCardsWrapper className="max-w-[1200px]" />
                         </div>
                     </div>
                 </section>
             </main>
 
-            <footer className="w-full border-t border-t-foreground/10 bg-white dark:bg-ui-navy-900">
-                <div className="w-full max-w-7xl mx-auto flex items-center justify-between py-6 px-4">
-                    <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">
-                        &copy; {new Date().getFullYear()} {PROJECT_NAME}. All rights reserved.
-                    </p>
-                    <p className="text-sm">
-                        Powered by{" "}
+            <footer className="w-full border-t border-t-foreground/10 bg-white dark:bg-ui-navy-900 relative overflow-hidden">
+                <BackgroundBoxesWrapper className="absolute inset-0 z-0" containerClassName="opacity-10 scale-75" />
+                <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between py-8 px-4 relative z-10">
+                    <div className="flex flex-col items-center md:items-start mb-4 md:mb-0">
+                        <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white mb-2">{PROJECT_NAME}</h3>
+                        <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">&copy; {new Date().getFullYear()} All rights reserved.</p>
+                    </div>
+                    <div className="flex flex-col items-center md:items-end">
+                        <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200 mb-2">Powered by</p>
                         <a
                             href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
                             target="_blank"
-                            className="font-bold hover:underline"
+                            className="font-bold hover:underline flex items-center gap-1 text-ui-navy-700 dark:text-ui-beige-100"
                             rel="noreferrer"
                         >
-                            Supabase
+                            <span>Supabase</span>
                         </a>
-                    </p>
+                    </div>
                 </div>
             </footer>
         </div>
