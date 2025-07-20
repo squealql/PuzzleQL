@@ -162,6 +162,7 @@ function deepCloneBlock(block: any): any {
 export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasProps) {
   const [blocks, setBlocks] = useState(shapes);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null); // <-- new state
   const dragOffset = useRef({ x: 0, y: 0 }); // <-- useRef instead of useState
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
@@ -273,10 +274,10 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
       // A button was clicked
       console.log("Button clicked:", buttons[button]);
       currentButton = buttons[button].text;
+      setEditingIndex(null); // Remove editing state if switching buttons
       updateAll();
     } else {
       // No button was clicked
-
       // check if a toolbox item was clicked
       var toolbox = buttonMap[currentButton];
       for (let i = 0; i < toolbox.length; i++){
@@ -290,22 +291,32 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
           setBlocks(prev => {
             const newBlocks = [...prev, clonedItem];
             setDraggedIndex(newBlocks.length - 1); // Set to drag the newly added block
+            setEditingIndex(null); // Remove editing state if adding new block
             return newBlocks;
           });
           dragOffset.current = { x: clonedItem.w / 2, y: clonedItem.h / 2 };
           return; // Exit early since we found a toolbox item
         }
       }
-
       // check if a code item was clicked
       console.log("No button at these coordinates");
       const idx = getBlockAt(x, y);
       if (idx !== -1) {
         setDraggedIndex(idx);
         dragOffset.current = { x: x - blocks[idx].x, y: y - blocks[idx].y }; // <-- update ref directly
+        // If block is editable, set editingIndex
+        const editableTypes = ["IdentifierInput", "Table", "ColumnReference"];
+        if (editableTypes.includes(blocks[idx].type)) {
+          setEditingIndex(idx);
+          // Focus the canvas for key events
+          canvasRef.current?.focus();
+        } else {
+          setEditingIndex(null);
+        }
+      } else {
+        setEditingIndex(null);
       }
     }
-    
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -395,16 +406,45 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     }
   };
 
+  // Handle key presses for editing blocks
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (editingIndex === null) return;
+    setBlocks(prev => {
+      const newBlocks = [...prev];
+      const block = { ...newBlocks[editingIndex] };
+      // Only update input for editable types
+      const editableTypes = ["IdentifierInput", "Table", "ColumnReference"];
+      if (editableTypes.includes(block.type)) {
+        // Type assertion for editable block
+        const editableBlock = block as typeof block & { input: string };
+        if (typeof editableBlock.input !== 'string') editableBlock.input = "";
+        if (e.key === "Backspace") {
+          editableBlock.input = editableBlock.input.slice(0, -1);
+        } else if (e.key.length === 1) {
+          editableBlock.input += e.key;
+        } else if (e.key === "Enter") {
+          setEditingIndex(null);
+          newBlocks[editingIndex] = editableBlock;
+          return newBlocks;
+        }
+        newBlocks[editingIndex] = editableBlock;
+      }
+      return newBlocks;
+    });
+  };
+
   return (
     <canvas
       ref={canvasRef}
       width={width}
       height={height}
       style={{ border: "1px solid #333", background: "#eee" }}
+      tabIndex={0} // Make canvas focusable
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onKeyDown={handleKeyDown} // Listen for key events
     />
   );
 }
