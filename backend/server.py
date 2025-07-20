@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 import google.generativeai as genai
 import os
-
+from fastapi.middleware.cors import CORSMiddleware
 # load .env
 load_dotenv()
 USER = os.getenv("user")
@@ -21,7 +21,18 @@ genai.configure(api_key=GEMINIKEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 app = FastAPI()
- 
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
 	return {"Hello" : "World"}

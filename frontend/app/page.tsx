@@ -1,54 +1,104 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
+import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { PROJECT_NAME } from "@/lib/config";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
+import { GetStartedButton, SignUpButton } from "@/components/ui/button-wrappers";
+import { BackgroundBoxesWrapper } from "@/components/ui/background-boxes-wrapper";
+import { FeatureCardsWrapper } from "@/components/ui/feature-cards-wrapper";
 
-export default function Home() {
+export default function HomePage() {
     return (
-        <main className="min-h-screen flex flex-col items-center">
-            <div className="flex-1 w-full flex flex-col gap-20 items-center">
-                <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-                    <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                        <div className="flex gap-5 items-center font-semibold">
-                            <Link href={"/"}>SQL Query Builder</Link>
-                            <div className="flex items-center gap-2">
-                                <Link href="/projects" className="hover:underline">
+        <div className="flex flex-col min-h-screen bg-ui-beige-100 dark:bg-ui-navy-950">
+            <SiteHeader>
+                <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 bg-white dark:bg-ui-navy-900">
+                    <div className="w-full max-w-7xl flex justify-between items-center p-3 text-sm">
+                        <div className="flex items-center gap-4">
+                            <Link href="/" className="font-bold text-lg text-ui-navy-900 dark:text-white">
+                                {PROJECT_NAME}
+                            </Link>
+                            <div className="hidden md:flex items-center gap-4 text-ui-navy-700 dark:text-ui-beige-300">
+                                <Link href="/#features" className="hover:text-ui-navy-500 dark:hover:text-white">
+                                    Features
+                                </Link>
+                                <Link href="/projects" className="hover:text-ui-navy-500 dark:hover:text-white">
                                     Projects
                                 </Link>
-                                <DeployButton />
                             </div>
                         </div>
-                        {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
+                        <div className="flex items-center gap-4">
+                            {hasEnvVars && <AuthButton />}
+                            <ThemeSwitcher />
+                        </div>
                     </div>
                 </nav>
-                <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-                    <Hero />
-                    <main className="flex-1 flex flex-col gap-6 px-4">
-                        <h2 className="font-medium text-xl mb-4">Next steps</h2>
-                        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-                    </main>
-                </div>
+            </SiteHeader>
 
-                <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-                    <p>
-                        Powered by{" "}
+            <main className="flex-1 w-full">
+                {/* Hero Section */}
+                <section className="relative w-full flex-grow flex items-center justify-center py-20 md:py-32 text-center">
+                    <Image src="/waves.png" alt="Subtle wave patterns in the background" fill className="object-cover object-bottom z-0 top-20" priority />
+                    <div className="absolute inset-0 bg-ui-beige-100/80 dark:bg-ui-navy-950/80 z-10"></div>
+                    <div className="relative z-20 container px-4 md:px-6">
+                        <div className="grid gap-6 lg:grid-cols-1 items-center">
+                            <div className="flex flex-col justify-center space-y-4">
+                                <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-ui-navy-800 to-ui-navy-300">
+                                    {PROJECT_NAME}
+                                </h1>
+                                <TextGenerateEffect
+                                    words="Build complex SQL queries with an intuitive drag-and-drop interface. No more syntax errors, just seamless data exploration."
+                                    className="max-w-[600px] text-ui-navy-700 dark:text-ui-beige-300 md:text-xl mx-auto"
+                                />
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <Link href="/projects">
+                                        <GetStartedButton />
+                                    </Link>
+                                    <Link href="/auth/sign-up">
+                                        <SignUpButton />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Features Section with Background Boxes */}
+                <section id="features" className="w-full py-16 md:py-24 relative overflow-hidden">
+                    <BackgroundBoxesWrapper className="absolute inset-0 z-0" containerClassName="opacity-30 scale-125" />
+                    <div className="container mx-auto px-4 md:px-6 relative z-10">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold tracking-tighter text-ui-navy-900 dark:text-white">Why {PROJECT_NAME}?</h2>
+                        </div>
+                        <div className="flex justify-center">
+                            <FeatureCardsWrapper className="max-w-[1200px]" />
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer className="w-full border-t border-t-foreground/10 bg-white dark:bg-ui-navy-900 relative overflow-hidden">
+                <BackgroundBoxesWrapper className="absolute inset-0 z-0" containerClassName="opacity-10 scale-75" />
+                <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between py-8 px-4 relative z-10">
+                    <div className="flex flex-col items-center md:items-start mb-4 md:mb-0">
+                        <h3 className="text-lg font-bold text-ui-navy-800 dark:text-white mb-2">{PROJECT_NAME}</h3>
+                        <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200">&copy; {new Date().getFullYear()} All rights reserved.</p>
+                    </div>
+                    <div className="flex flex-col items-center md:items-end">
+                        <p className="text-sm text-ui-navy-600 dark:text-ui-beige-200 mb-2">Powered by</p>
                         <a
                             href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
                             target="_blank"
-                            className="font-bold hover:underline"
+                            className="font-bold hover:underline flex items-center gap-1 text-ui-navy-700 dark:text-ui-beige-100"
                             rel="noreferrer"
                         >
-                            Supabase
+                            <span>Supabase</span>
                         </a>
-                    </p>
-                    <ThemeSwitcher />
-                </footer>
-            </div>
-        </main>
+                    </div>
+                </div>
+            </footer>
+        </div>
     );
 }
