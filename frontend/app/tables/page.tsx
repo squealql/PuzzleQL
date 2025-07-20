@@ -272,6 +272,9 @@ export default function SQLDataViewer() {
                 // Construct the frontend Database object
                 const newDatabase: Database = { tables: {} };
                 for (const tableName in json) {
+                  if(tableName==='temptable'||tableName==='todos'){
+                    continue;
+                  }
                     const backendTable = json[tableName];
                     // Extract column names from the backend columns array
                     const columnNames = backendTable.columns.map((col) => col[0]);
