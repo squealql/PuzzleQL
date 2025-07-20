@@ -39,71 +39,57 @@ class SmallRawText extends CodeBlockBase {
     this.text = text;
   }
 }
-export class Table extends CodeBlockBase{
-  type: string;
+
+class InputBox extends SmallRawText{
   input: string;
-  x: number;
-  y: number;
-  constructor(x: number, y: number) {
-    super(x, y, 80, 30);
-    this.type = "Table"
+  constructor(x: number, y: number, text: string) {
+    // Width: 20 + 13 * each character in text
+    super(x, y, text);
+    this.type = "InputBox";
     this.input = "";
-    this.x = x;
-    this.y = y;
+  }
+  
+}
+
+export class Table extends InputBox{
+  constructor(x: number, y: number) {
+    super(x, y, "<table input>");
+    this.type = "Table";
     this.color="lightgreen"
   }
 }
-export class IdentifierInput extends CodeBlockBase{
-  type: string;
-  input: string;
-  x: number;
-  y: number;
+
+export class IdentifierInput extends InputBox{
   constructor(x: number, y: number) {
-    super(x, y, 80, 30);
-    this.type = "IdentifierInput"
-    this.input = "";
-    this.x = x;
-    this.y = y;
+    super(x, y, "<identifier input>");
+    this.type = "IdentifierInput";
     this.color="green"
   }
 }
 
-export class ColumnReferenceBox extends CodeBlockBase{
+
+export class ColumnReferenceBox extends SmallRawText{
   type: string;
-  x: number;
-  y: number;
   constructor(x: number, y: number) {
-    super(x, y, 80, 30);
+    super(x, y, "<column_ref>");
     this.type = "ColumnReferenceBox"
-    this.x = x;
-    this.y = y;
     this.color="green"
   }
 }
 
-export class ColumnReference extends CodeBlockBase{
-  type: string;
-  input: string;
-  x: number;
-  y: number;
+export class ColumnReference extends InputBox{
   constructor(x: number, y: number) {
-    super(x, y, 80, 30);
-    this.type = "ColumnReferenceBox";
-    this.input = "";
-    this.x = x;
-    this.y = y;
+    super(x, y, "<column input>");
+    this.type = "ColumnReference";
     this.color="green"
   }
 }
-export class ExpressionBox extends CodeBlockBase{
+
+export class ExpressionBox extends SmallRawText{
   type: string;
-  x: number;
-  y: number;
   constructor(x: number, y: number) {
-    super(x, y, 80, 30);
-    this.type = "ExpressionBox"
-    this.x = x;
-    this.y = y;
+    super(x, y, "<expression>");
+    this.type = "ExpresionBox"
     this.color="green"
   }
 }
@@ -129,7 +115,7 @@ export class TableBox extends SmallRawText{
 export class ConditionBox extends SmallRawText{
   type: string;
   constructor(x: number, y: number) {
-    super(x, y, "<condition>");
+    super(x, y, "<conditionbox>");
     this.type = "ConditionBox"
     this.color="lightblue"
   }
@@ -267,7 +253,7 @@ export class WILDCARD extends CodeBlockBase {
 
 export class DeleteBox extends CodeBlockBase {
   constructor(x: number, y: number) {
-    super(x, y, 100, 60);
+    super(x, y, 500, 60);
     this.type = "DeleteBox";
     this.color = "#ff4444";
   }

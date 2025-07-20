@@ -11,7 +11,7 @@ interface CanvasProps {
 var currentButton = "CRUD";
 const buttonMap : {[key : string] : any[]} = {
   "CRUD"  : [new Blocks.SELECT(5,50), new Blocks.SELECT_DISTINCT(5,110), new Blocks.UPDATE(5,170), new Blocks.DELETE(5,230), new Blocks.DROP_TABLE(5,290), new Blocks.DROP_COLUMN(5,350)],
-  "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110)]
+  "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110), new Blocks.Table(5,170), new Blocks.ColumnReference(5,250)]
 }
 
 // where these blocks would appear int
@@ -76,6 +76,18 @@ function displayBlock(ctx: any, block: any) {
     ctx.fillStyle = "white";
     ctx.font = "18px Arial";
     ctx.fillText(block.text, block.x+2, block.y+15);
+  }else if (block.type == "ColumnReferenceBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
+  }else if (block.type == "ExpresionBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
   }else if (block.type == "TableBox") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
@@ -93,12 +105,38 @@ function displayBlock(ctx: any, block: any) {
     ctx.fillRect(block.x, block.y, block.w, block.h);
     ctx.fillStyle = "white";
     ctx.font = "24px Arial";
-    // Move the text position lower by increasing the y value (e.g., +15)
     ctx.fillText(block.text, block.x+10, block.y + 20);
-  }else if (block.type == "IdentifierBox") {
+  }else if (block.type == "Table") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
-  } else if (compoundItems.includes(block.type)) {
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    if(block.input != ""){
+      ctx.fillText(block.input, block.x+5, block.y + 18);
+    }else{
+      ctx.fillText(block.text, block.x+5, block.y + 18);
+    }
+  }else if (block.type == "IdentifierInput") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    if(block.input != ""){
+      ctx.fillText(block.input, block.x+5, block.y + 18);
+    }else{
+      ctx.fillText(block.text, block.x+5, block.y + 18);
+    }
+  }else if (block.type == "ColumnReference") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    if(block.input != ""){
+      ctx.fillText(block.input, block.x+5, block.y + 18);
+    }else{
+      ctx.fillText(block.text, block.x+5, block.y + 18);
+    }
+  }else if (compoundItems.includes(block.type)) {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
     // Render content items
@@ -154,7 +192,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     displayTag();
     // draw a giant line
     ctx.fillStyle = "grey";
-    ctx.fillRect(480,0,5,width);
+    ctx.fillRect(650,0,5,width);
     
     // Draw the delete box
     ctx.fillStyle = deleteBox.color;
@@ -178,7 +216,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
 
   useEffect(() => {
     // Update delete box position when canvas dimensions change
-    deleteBox.x = width - 120;
+    deleteBox.x = width - 620;
     deleteBox.y = height - 80;
     updateAll();
   }, [blocks, width, height, currentButton]);

@@ -12,7 +12,7 @@ export default function BlockCanvas() {
     <div className="w-fit h-fit m-2 rounded-sm flex-col flex">
       <Canvas
         shapes={blockslist}
-        width={1100}
+        width={1400}
         height={700}
       />
     </div>
