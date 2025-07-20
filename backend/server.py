@@ -4,7 +4,7 @@ import psycopg2
 from dotenv import load_dotenv
 import os
 from pydantic import BaseModel
-
+from fastapi.middleware.cors import CORSMiddleware
 # load .env
 load_dotenv()
 USER = os.getenv("user")
@@ -17,7 +17,18 @@ conn= psycopg2.connect(f"user={USER} password={PASSWORD} host={HOST} port={PORT}
 cursor = conn.cursor()
 
 app = FastAPI()
- 
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
 	return {"Hello" : "World"}
