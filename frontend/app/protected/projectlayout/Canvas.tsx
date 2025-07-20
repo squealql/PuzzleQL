@@ -167,7 +167,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
   // Create a delete box that's always present
-  const deleteBox = new Blocks.DeleteBox(width - 120, height - 80);
+  const deleteBox = new Blocks.DeleteBox(width - 620, height - 80);
 
   useEffect(() => {
     for (let b = 0; b < blocks.length; b++)
