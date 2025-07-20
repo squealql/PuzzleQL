@@ -376,144 +376,166 @@ const getConstraintColor = (constraint: string | null): string => {
 
 // --- Main Component with Enhanced Typings ---
 const SQLTableVisualizer: React.FC = () => {
-    const [sqlInput, setSqlInput] = useState<string>("");
-    const [parsedSchema, setParsedSchema] = useState<DatabaseSchema | null>(null);
-    const [error, setError] = useState<string>("");
-    const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [sqlInput, setSqlInput] = useState<string>('');
+  const [parsedSchema, setParsedSchema] = useState<DatabaseSchema | null>(null);
+  const [error, setError] = useState<string>('');
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
 
-    const svgRef = useRef<SVGSVGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
-    const handleParse = (): void => {
-        setError("");
-        setParsedSchema(null);
-        setSelectedTable(null);
+  const handleParse = (): void => {
+    setError('');
+    setParsedSchema(null);
+    setSelectedTable(null);
+    
+    if (!sqlInput.trim()) {
+      setError('Please enter CREATE TABLE statement(s)');
+      return;
+    }
+    
+    try {
+      const result: DatabaseSchema = parseMultipleTables(sqlInput);
+      if (result.tables.length === 0) {
+        setError('No valid CREATE TABLE statements found');
+        return;
+      }
+      setParsedSchema(result);
+    } catch (err: unknown) {
+      const errorMessage: string = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+    }
+  };
 
-        if (!sqlInput.trim()) {
-            setError("Please enter CREATE TABLE statement(s)");
-            return;
+  const handleLoadSample = (): void => {
+    setSqlInput(sampleSQL);
+  };
+
+  const handleTableSelect = (tableName: string): void => {
+    setSelectedTable(selectedTable === tableName ? null : tableName);
+  };
+
+  const handleSetupProject = async (): Promise<void> => {
+  let workingCommit = true;
+  console.log(parsedSchema?.sqlQueries);
+  if (parsedSchema?.sqlQueries) {
+    for (const tableCommand of parsedSchema.sqlQueries) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/create_send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sql: tableCommand,
+            userid: "1",
+          }),
+        });
+        
+        if (!response) {
+          workingCommit = false;
         }
 
-        try {
-            const result: DatabaseSchema = parseMultipleTables(sqlInput);
-            if (result.tables.length === 0) {
-                setError("No valid CREATE TABLE statements found");
-                return;
-            }
-            setParsedSchema(result);
-        } catch (err: unknown) {
-            const errorMessage: string = err instanceof Error ? err.message : "Unknown error occurred";
-            setError(errorMessage);
-        }
-    };
+  if (workingCommit) {
+    try {
+      const commitResponse = await fetch('http://127.0.0.1:8000/commit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sql: '',
+        }),
+      });
+      
+      if (!commitResponse) {
+        console.error('Commit error');
+      } else {
+        console.log('Database setup completed successfully!');
+      }
+    } catch (e: any) {
+      console.error('Failed to commit:', e);
+    }
+  }
+};
+    
+    
 
-    const handleLoadSample = (): void => {
-        setSqlInput(sampleSQL);
-    };
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    setSqlInput(e.target.value);
+  };
 
-    const handleTableSelect = (tableName: string): void => {
-        setSelectedTable(selectedTable === tableName ? null : tableName);
-    };
-
-    const handleSetupProject = async (): Promise<void> => {
-        let workingCommit = true;
-        console.log(parsedSchema?.sqlQueries);
-        if (parsedSchema?.sqlQueries) {
-            for (const tableCommand of parsedSchema.sqlQueries) {
-                try {
-                    const response = await fetch("http://127.0.0.1:8000/create_send", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            sql: tableCommand,
-                            userid: "1",
-                        }),
-                    });
-
-                    if (!response.ok) {
-                        console.error(`HTTP error! status: ${response.status}`);
-                        const errorText = await response.text();
-                        console.error("Error response:", errorText);
-                        workingCommit = false;
-                    }
-                } catch (e: any) {
-                    workingCommit = false;
-                }
-            }
-        }
-
-        if (workingCommit) {
-            try {
-                const commitResponse = await fetch("http://127.0.0.1:8000/commit", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        sql: "",
-                    }),
-                });
-
-                if (!commitResponse.ok) {
-                    console.error(`Commit failed! status: ${commitResponse.status}`);
-                    const errorText = await commitResponse.text();
-                    console.error("Commit error response:", errorText);
-                } else {
-                    console.log("Database setup completed successfully!");
-                }
-            } catch (e: any) {
-                console.error("Failed to commit:", e);
-            }
-        }
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
-        setSqlInput(e.target.value);
-    };
-
-    return (
-        <div className="min-h-screen" style={{ background: "hsl(var(--ui-beige-100))" }}>
-            <SiteHeader>
-                <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 bg-white dark:bg-ui-navy-900">
-                    <div className="w-full max-w-7xl flex justify-between items-center p-3 text-sm">
-                        <div className="flex items-center gap-4">
-                            <Link href="/" className="font-bold text-lg text-ui-navy-900 dark:text-white">
-                                {PROJECT_NAME}
-                            </Link>
-                            <div className="hidden md:flex items-center gap-4 text-ui-navy-700 dark:text-ui-beige-300">
-                                <Link href="/#features" className="hover:text-ui-navy-500 dark:hover:text-white">
-                                    Features
-                                </Link>
-                                <Link href="/projects" className="hover:text-ui-navy-500 dark:hover:text-white">
-                                    Projects
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <ThemeSwitcher />
-                        </div>
-                    </div>
-                </nav>
-            </SiteHeader>
-            <div className="container mx-auto px-4 py-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8 bg-ui-navy-400" style={{ color: "white", borderRadius: "0.5rem", padding: "1rem" }}>
-                    <div className="flex items-center gap-3">
-                        <Database className="w-8 h-8 bg-ui-navy-400" />
-                        <h1 className="text-3xl font-bold">PostgreSQL Schema Visualizer</h1>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {parsedSchema && (
-                            <button
-                                onClick={handleSetupProject}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg"
-                                style={{ background: "hsl(var(--ui-navy-700))", color: "white" }}
-                            >
-                                <Upload className="w-4 h-4" />
-                                Setup Project
-                            </button>
-                        )}
+  return (
+    <div className="min-h-screen" style={{ background: 'hsl(var(--ui-beige-100))' }}>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8" style={{ background: 'hsl(var(--ui-navy-900))', color: 'white', borderRadius: '0.5rem', padding: '1rem' }}>
+          <div className="flex items-center gap-3">
+            <Database className="w-8 h-8" style={{ color: 'hsl(var(--ui-navy-300))' }} />
+            <h1 className="text-3xl font-bold">PostgreSQL Schema Visualizer</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {parsedSchema && (
+              <button
+                onClick={handleSetupProject}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg"
+                style={{ background: 'hsl(var(--ui-navy-700))', color: 'white' }}
+              >
+                <Upload className="w-4 h-4" />
+                Setup Project
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="grid xl:grid-cols-3 gap-8">
+          {/* Input Section */}
+          <div className="xl:col-span-1 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold flex items-center gap-2" style={{ color: 'hsl(var(--ui-navy-900))' }}>
+                <FileText className="w-5 h-5" style={{ color: 'hsl(var(--ui-navy-700))' }} />
+                SQL Input
+              </h2>
+              <button
+                onClick={handleLoadSample}
+                className="text-sm px-3 py-1 rounded"
+                style={{ background: 'hsl(var(--ui-navy-200))', color: 'hsl(var(--ui-navy-900))' }}
+              >
+                Load Sample
+              </button>
+            </div>
+            <textarea
+              value={sqlInput}
+              onChange={handleInputChange}
+              placeholder="Paste your CREATE TABLE statements here..."
+              className="w-full h-64 p-4 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ background: 'white', border: '1px solid hsl(var(--ui-navy-200))', color: 'hsl(var(--ui-navy-900))' }}
+            />
+            <button
+              onClick={handleParse}
+              disabled={!sqlInput.trim()}
+              className="w-full py-3 rounded-lg font-medium"
+              style={{ background: 'hsl(var(--ui-navy-700))', color: 'white', opacity: !sqlInput.trim() ? 0.5 : 1, cursor: !sqlInput.trim() ? 'not-allowed' : 'pointer' }}
+            >
+              Parse SQL
+            </button>
+            {error && (
+              <div className="flex items-center gap-2 p-4 rounded-lg" style={{ background: 'hsl(var(--ui-terracotta-300))', border: '1px solid hsl(var(--ui-terracotta-500))', color: 'hsl(var(--ui-terracotta-700))' }}>
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+            {/* Relationships Summary */}
+            {parsedSchema && parsedSchema.relationships.length > 0 && (
+              <div className="rounded-lg p-4" style={{ background: 'hsl(var(--ui-beige-200))', border: '1px solid hsl(var(--ui-navy-200))' }}>
+                <h3 className="font-semibold mb-3 flex items-center gap-2" style={{ color: 'hsl(var(--ui-navy-700))' }}>
+                  <Link className="w-4 h-4" />
+                  Relationships ({parsedSchema.relationships.length})
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {parsedSchema.relationships.map((rel: Relationship, index: number) => (
+                    <div key={index} className="flex items-center gap-2" style={{ color: 'hsl(var(--block-blue-600))' }}>
+                      <span className="font-medium">{rel.fromTable}.{rel.fromColumn}</span>
+                      <ArrowRight className="w-3 h-3" />
+                      <span className="font-medium">{rel.toTable}.{rel.toColumn}</span>
                     </div>
                 </div>
                 <div className="grid xl:grid-cols-3 gap-8">
