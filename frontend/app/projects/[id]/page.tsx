@@ -120,6 +120,11 @@ export default function ProjectDetailPage() {
                             Setup Table Schema
                         </Button>
                     </CardFooter>
+                    <CardFooter>
+                        <Button className="w-full bg-ui-navy-700 text-white" onClick={() => router.push("/protected/projectlayout")}>
+                            Enter SQL Query Crafter
+                        </Button>
+                    </CardFooter>
                 </Card>
             </div>
         </div>
