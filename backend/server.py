@@ -105,6 +105,7 @@ def UPDATE_Send(item : Item) -> bool:
     
 @app.post("/delete_send")
 def DELETE_SEND(item : Item) -> bool:
+    print("THIS IS WHAT?")
     try:
         print(item)
         # sending a SQL that corresponds to SELECT
