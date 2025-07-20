@@ -79,7 +79,6 @@ export class ConditionBox extends CodeBlockBase{
   }
 }
 
-
 export class SELECTBlock extends CodeBlockBase {
   content: (RawText | IdentifierBox)[];
   constructor(x: number, y: number) {
@@ -112,8 +111,19 @@ export class SELECT_DISTINCT extends CodeBlockBase {
       new RawText(this.x+200, this.y+5, "WHERE"),
       new ConditionBox(this.x+240, this.y+5),
     ];
-    this.type = "SELECT";
+    this.type = "SELECT DISTINCT";
     this.color = "lightgrey";
     this.content = content;
+  }
+}
+
+export class BUTTON extends CodeBlockBase{
+  text: string;
+  color: string;
+  constructor(x: number, y : number, color : string, text: string){
+    super(x,y,20,30);
+    this.color = color;
+    this.text = text;
+    this.w = 20 + 4 * text.length;
   }
 }
