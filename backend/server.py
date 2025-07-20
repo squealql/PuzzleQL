@@ -52,6 +52,16 @@ def getallfromtable(tablename : str):
     vals = cursor.fetchall()
     return vals
 
+def getcolumnsfromtable(tablename : str):
+    cursor.execute("""
+    SELECT column_name, data_type, is_nullable
+    FROM information_schema.columns 
+    WHERE table_name = %s AND table_schema = 'public'
+    ORDER BY ordinal_position
+""", (tablename,))
+    vals = cursor.fetchall()
+    return vals
+
 @app.get("/getalltables")
 def getalltables():
     cursor.execute("""
@@ -63,7 +73,7 @@ def getalltables():
     # create a hashmap for all tables
     tablevals = dict()
     for table in tables:
-        tablevals[table[0]] = getallfromtable(table[0])
+        tablevals[table[0]] = {"values" : getallfromtable(table[0]), "columns" : getcolumnsfromtable(table[0])}
     return tablevals
 
 @app.post("/select_send")
