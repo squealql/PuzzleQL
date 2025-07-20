@@ -45,9 +45,17 @@ export default function HomePage() {
                     <div className="relative z-20 container px-4 md:px-6">
                         <div className="grid gap-6 lg:grid-cols-1 items-center">
                             <div className="flex flex-col justify-center space-y-4">
-                                <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-ui-navy-800 to-ui-navy-300">
-                                    {PROJECT_NAME}
-                                </h1>
+                                <div className="flex justify-center">
+                                    <Image
+                                        src="/puzzleql-transparent.png"
+                                        alt={PROJECT_NAME}
+                                        width={400}
+                                        height={100}
+                                        style={{ height: "auto" }}
+                                        className="w-auto max-w-[80%] md:max-w-[500px]"
+                                        priority
+                                    />
+                                </div>
                                 <TextGenerateEffect
                                     words="Build complex SQL queries with an intuitive drag-and-drop interface. No more syntax errors, just seamless data exploration."
                                     className="max-w-[600px] text-ui-navy-700 dark:text-ui-beige-300 md:text-xl mx-auto"
