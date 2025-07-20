@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { PROJECT_NAME } from "@/lib/config";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Changed from "next/router"
 
 // --- Enhanced Type Definitions ---
 interface Column {
@@ -380,8 +381,10 @@ const SQLTableVisualizer: React.FC = () => {
     const [parsedSchema, setParsedSchema] = useState<DatabaseSchema | null>(null);
     const [error, setError] = useState<string>("");
     const [selectedTable, setSelectedTable] = useState<string | null>(null);
+    const [isSettingUpProject, setIsSettingUpProject] = useState<boolean>(false);
 
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const router = useRouter();
 
     const handleParse = (): void => {
         setError("");
@@ -415,9 +418,18 @@ const SQLTableVisualizer: React.FC = () => {
     };
 
     const handleSetupProject = async (): Promise<void> => {
+        if (!parsedSchema?.sqlQueries) {
+            console.error("No SQL queries to process");
+            return;
+        }
+
+        setIsSettingUpProject(true);
         let workingCommit = true;
-        console.log(parsedSchema?.sqlQueries);
-        if (parsedSchema?.sqlQueries) {
+        
+        console.log(parsedSchema.sqlQueries);
+        
+        try {
+            // Send each table creation command
             for (const tableCommand of parsedSchema.sqlQueries) {
                 try {
                     const response = await fetch("http://127.0.0.1:8000/create_send", {
@@ -431,36 +443,49 @@ const SQLTableVisualizer: React.FC = () => {
                         }),
                     });
 
-                    if (!response) {
+                    if (!response.ok) {
+                        console.error("Failed to send table command:", response.statusText);
                         workingCommit = false;
+                        break;
                     }
                 } catch (e) {
                     console.error("Failed to send table command:", e);
                     workingCommit = false;
+                    break;
                 }
             }
-        }
 
-        if (workingCommit) {
-            try {
-                const commitResponse = await fetch("http://127.0.0.1:8000/commit", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        sql: "",
-                    }),
-                });
+            // If all table commands were sent successfully, commit
+            if (workingCommit) {
+                try {
+                    const commitResponse = await fetch("http://127.0.0.1:8000/commit", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            sql: "",
+                        }),
+                    });
 
-                if (!commitResponse) {
-                    console.error("Commit error");
-                } else {
-                    console.log("Database setup completed successfully!");
+                    if (!commitResponse.ok) {
+                        console.error("Commit error:", commitResponse.statusText);
+                    } else {
+                        console.log("Database setup completed successfully!");
+                        
+                        // Navigate to the project layout page using the push method
+                        router.push('/protected/projectlayout');
+                    }
+                } catch (e: unknown) {
+                    console.error("Failed to commit:", e instanceof Error ? e.message : "Unknown error");
                 }
-            } catch (e: unknown) {
-                console.error("Failed to commit:", e instanceof Error ? e.message : "Unknown error");
+            } else {
+                console.error("Failed to set up project - some table commands failed");
             }
+        } catch (error) {
+            console.error("Error setting up project:", error);
+        } finally {
+            setIsSettingUpProject(false);
         }
     };
 
