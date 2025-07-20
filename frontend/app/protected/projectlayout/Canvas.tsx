@@ -104,13 +104,16 @@ const replaceMap: { [key: string]: string } = {
 };
 
 
+const buttonSpacing = 10;
+const buttonWidth = 120; // match new BUTTON width
+const buttonHeight = 50; // match new BUTTON height
 const buttons = [
-  new Blocks.BUTTON(10,10,"grey","CRUD"),
-  new Blocks.BUTTON(50,10,"green","Identifier"),
-  new Blocks.BUTTON(115,10,"lightblue","Conditions"),
-  new Blocks.BUTTON(180,10,"red","Operators"),
-  new Blocks.BUTTON(240,10,"purple","Joins"),
-]
+  new Blocks.BUTTON(5, 5, "grey", "CRUD"),
+  new Blocks.BUTTON(105, 5, "green", "Identifier"),
+  new Blocks.BUTTON(245, 5, "lightblue", "Conditions"),
+  new Blocks.BUTTON(395, 5, "red", "Operators"),
+  new Blocks.BUTTON(535, 5, "purple", "Joins"),
+];
 
 const compoundItems = [
   "SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE", "DROP COLUMN",
@@ -126,11 +129,14 @@ const blockUpdate = (block : any) => {
         var currentwidth = block.x;
         for (let i = 0; i < block.content.length; i++){
           var item = block.content[i]
+          item.y = block.y;
           if (item.type == "RawText"){
-            item.y = block.y + 30           
+            item.y = block.y + 10           
           } 
           else{
-            item.y = block.y + 10
+            if (!compoundItems.includes(item.type)){
+              item.y = block.y + 10
+            }
           }
           if (item.y + item.h > max_y) max_y = item.y +item.h;
           item.x = currentwidth;
@@ -141,89 +147,60 @@ const blockUpdate = (block : any) => {
       }
 };
 
+function drawRoundedRect(ctx: any, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
 
 function displayBlock(ctx: any, block: any) {
-  if (block.type == "RawText") {
+  // Set shadow for all blocks
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.10)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  const borderRadius = 12;
+  // Draw with rounded corners
+  if (block.type === "RawText" || block.type === "BUTTON" || block.type === "IdentifierBox" || block.type === "ColumnReferenceBox" || block.type === "ExpressionBox" || block.type === "TableBox" || block.type === "ConditionBox" || block.type === "WILDCARD" || block.type === "Table" || block.type === "IdentifierInput" || block.type === "ColumnReference") {
     ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+7, block.y);
-  }else if (block.type == "SELECTBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "IdentifierBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "ColumnReferenceBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "ExpressionBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "TableBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "ConditionBox") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "WILDCARD") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "24px Arial";
-    ctx.fillText(block.text, block.x+10, block.y + 20);
-  }else if (block.type == "Table") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    if(block.input != ""){
-      ctx.fillText(block.input, block.x+5, block.y + 18);
-    }else{
-      ctx.fillText(block.text, block.x+5, block.y + 18);
+    drawRoundedRect(ctx, block.x, block.y, block.w, block.h, borderRadius);
+    ctx.fill();
+    ctx.shadowColor = 'rgba(0,0,0,0)'; // Remove shadow for border
+    if (block.type !== "RawText") {
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#222';
+      ctx.stroke();
     }
-  }else if (block.type == "IdentifierInput") {
+    ctx.font = block.type === "BUTTON" ? "20px Arial" : "18px Arial";
+    ctx.fillStyle = block.type === "BUTTON" ? "black" : (block.type === "RawText" ? "black" : "white");
+    // Center text
+    const text = block.input && block.input !== undefined ? block.input : block.text;
+    const textMetrics = ctx.measureText(text);
+    const textX = block.x + (block.w - textMetrics.width) / 2;
+    const textY = block.y + (block.h + (block.type === "BUTTON" ? 20 : 18)) / 2 - 4;
+    ctx.fillText(text, textX, textY);
+    ctx.restore();
+    return;
+  }
+  // Compound items
+  if (compoundItems.includes(block.type)) {
     ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    if(block.input != ""){
-      ctx.fillText(block.input, block.x+5, block.y + 18);
-    }else{
-      ctx.fillText(block.text, block.x+5, block.y + 18);
-    }
-  }else if (block.type == "ColumnReference") {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    if(block.input != ""){
-      ctx.fillText(block.input, block.x+5, block.y + 18);
-    }else{
-      ctx.fillText(block.text, block.x+5, block.y + 18);
-    }
-  }else if (compoundItems.includes(block.type)) {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
+    drawRoundedRect(ctx, block.x, block.y, block.w, block.h, borderRadius);
+    ctx.fill();
+    ctx.shadowColor = 'rgba(0,0,0,0)';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#222';
+    ctx.stroke();
+    ctx.restore();
     // Render content items
     if (block.content) {
       blockUpdate(block);
@@ -231,10 +208,17 @@ function displayBlock(ctx: any, block: any) {
         displayBlock(ctx, item);
       });
     }
-  } else {
-    ctx.fillStyle = block.color || "black";
-    ctx.fillRect(block.x, block.y, block.w, block.h);
+    return;
   }
+  // Default fallback
+  ctx.fillStyle = block.color || "black";
+  drawRoundedRect(ctx, block.x, block.y, block.w, block.h, borderRadius);
+  ctx.fill();
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#222';
+  ctx.stroke();
+  ctx.restore();
 }
 
 // Deep clone utility for blocks
@@ -285,8 +269,12 @@ export default function Canvas({ shapes = [], width = 0, height = 0, blocksRef, 
       ctx.fillStyle = buttons[i].color;
       ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
       ctx.fillStyle = "black";
-      ctx.font = "12px Arial";
-      ctx.fillText(buttons[i].text, buttons[i].x, buttons[i].y+12);
+      ctx.font = "20px Arial";
+      // Center the text vertically and horizontally
+      const textMetrics = ctx.measureText(buttons[i].text);
+      const textX = buttons[i].x + (buttons[i].w - textMetrics.width) / 2;
+      const textY = buttons[i].y + (buttons[i].h + 20) / 2 - 4;
+      ctx.fillText(buttons[i].text, textX, textY);
     }
     // draw the options
     displayTag();
@@ -466,7 +454,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0, blocksRef, 
                     var eucdist = getDistance(item.x , item.y , block.x, block.y);
                     if (-50 < eucdist && eucdist < 50){
                         block.x = otherBlock.x + block.w/2+10;
-                        block.y = otherBlock.y - block.h/2;
+                        block.y = otherBlock.y; // Align y with parent, not replacement
                         otherBlock.content[i] = block;
                         // Remove the block from the blocks list
                         setBlocks(prev => prev.filter((_, idx) => idx !== b));

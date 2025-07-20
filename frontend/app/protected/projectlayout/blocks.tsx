@@ -171,10 +171,11 @@ export class BUTTON extends CodeBlockBase{
   text: string;
   color: string;
   constructor(x: number, y : number, color : string, text: string){
-    super(x,y,20,30);
+    super(x, y, 80, 40); // Larger default size
     this.color = color;
     this.text = text;
-    this.w = 20 + 4 * text.length;
+    this.w = 60 + 10 * text.length; // Wider for text
+    this.h = 40; // Taller
   }
 }
 
