@@ -10,14 +10,14 @@ interface CanvasProps {
 
 var currentButton = "CRUD";
 const buttonMap : {[key : string] : any[]} = {
-  "CRUD"  : [new Blocks.SELECT(5,50), new Blocks.SELECT_DISTINCT(5,110), new Blocks.UPDATE(5,160), new Blocks.DELETE(5,210), new Blocks.DROP_TABLE(5,260), new Blocks.DROP_COLUMN(5,310)],
+  "CRUD"  : [new Blocks.SELECT(5,50), new Blocks.SELECT_DISTINCT(5,110), new Blocks.UPDATE(5,170), new Blocks.DELETE(5,230), new Blocks.DROP_TABLE(5,290), new Blocks.DROP_COLUMN(5,350)],
   "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110)]
 }
 
 // where these blocks would appear int
 const magnetMap: { [key: string]: string[] } = {
   "IdentifierInput" : ["SELECT", "SELECT DISTINCT"],
-  "Wildcard" : ["Equals"],
+  "Wildcard" : ["Equals", "SELECT", "SELECT DISTINCT"],
   "ColumnReference" : ["UPDATE", "DROP COLUMN", "LIKE"],
   "Table" : ["SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE"],
 };

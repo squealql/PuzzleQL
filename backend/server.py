@@ -47,6 +47,25 @@ class CreateItem(BaseModel):
     sql: str
     userid: str
 
+def getallfromtable(tablename : str):
+    cursor.execute(f"SELECT * FROM {tablename}")
+    vals = cursor.fetchall()
+    return vals
+
+@app.get("/getalltables")
+def getalltables():
+    cursor.execute("""
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = 'public'
+    """)
+    tables = cursor.fetchall()
+    # create a hashmap for all tables
+    tablevals = dict()
+    for table in tables:
+        tablevals[table[0]] = getallfromtable(table[0])
+    return tablevals
+
 @app.post("/select_send")
 def SELECT_Send(item : Item) -> bool:
     try:
