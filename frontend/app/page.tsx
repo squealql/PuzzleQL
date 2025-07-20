@@ -27,9 +27,6 @@ export default function HomePage() {
                                 <Link href="/projects" className="hover:text-ui-navy-500 dark:hover:text-white">
                                     Projects
                                 </Link>
-                                <Link href="/palette" className="hover:text-ui-navy-500 dark:hover:text-white">
-                                    Palette
-                                </Link>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">

@@ -13,7 +13,6 @@ export function LandingPageHeader() {
     const navItems = [
         { name: "Features", link: "/#features" },
         { name: "Projects", link: "/projects" },
-        { name: "Palette", link: "/palette" },
     ];
 
     return (
