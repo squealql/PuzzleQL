@@ -1,6 +1,7 @@
 import { AuthButton } from "@/components/auth-button";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { Button } from "@/components/ui/button";
 import { PROJECT_NAME } from "@/lib/config";
 import { hasEnvVars } from "@/lib/utils";
@@ -49,9 +50,10 @@ export default function HomePage() {
                                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-ui-navy-800 to-ui-navy-300">
                                     {PROJECT_NAME}
                                 </h1>
-                                <p className="max-w-[600px] text-ui-navy-700 dark:text-ui-beige-300 md:text-xl mx-auto">
-                                    Build complex SQL queries with an intuitive drag-and-drop interface. No more syntax errors, just seamless data exploration.
-                                </p>
+                                <TextGenerateEffect
+                                    words="Build complex SQL queries with an intuitive drag-and-drop interface. No more syntax errors, just seamless data exploration."
+                                    className="max-w-[600px] text-ui-navy-700 dark:text-ui-beige-300 md:text-xl mx-auto"
+                                />
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <Link href="/projects">
                                         <Button
