@@ -11,7 +11,7 @@ interface CanvasProps {
 var currentButton = "CRUD";
 const buttonMap : {[key : string] : any[]} = {
   "CRUD"  : [new Blocks.SELECT(5,50), new Blocks.SELECT_DISTINCT(5,110), new Blocks.UPDATE(5,160), new Blocks.DELETE(5,210), new Blocks.DROP_TABLE(5,260), new Blocks.DROP_COLUMN(5,310)],
-  "Identifier"  : [new Blocks.WILDCARD(5,20), new Blocks.IdentifierInput(20,20)]
+  "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110)]
 }
 
 // where these blocks would appear int
@@ -63,7 +63,9 @@ const blockUpdate = (block : any) => {
 };
 
 function displayBlock(ctx: any, block: any) {
-  if (block.type == "RawText") {
+  if (block.type == "RawText" || block.type == "WILDCARD") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
     ctx.fillStyle = "black";
     ctx.font = "18px Arial";
     ctx.fillText(block.text, block.x, block.y);

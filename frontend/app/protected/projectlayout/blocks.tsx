@@ -23,6 +23,7 @@ class RawText extends CodeBlockBase {
     const width = 20 + 10 * text.length;
     super(x, y, width, 20);
     this.type = "RawText";
+    this.color = "lightgrey";
     this.text = text;
   }
 }
@@ -258,6 +259,7 @@ export class WILDCARD extends CodeBlockBase {
     // Width: 20 + 13 * each character in text
     super(x, y, 5, 20);
     this.type = "WILDCARD";
+    this.color = "green";
     this.text = "*";
     const width = 20 + 10 * this.text.length;
     this.w = width;
