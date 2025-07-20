@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 import psycopg2
-import psycopg2
 from dotenv import load_dotenv
-import os
 from pydantic import BaseModel
+import google.generativeai as genai
+import os
 
 # load .env
 load_dotenv()
@@ -12,9 +12,13 @@ PASSWORD = os.getenv("password")
 HOST = os.getenv("host")
 PORT = os.getenv("port")
 DBNAME = os.getenv("dbname")
+GEMINIKEY = os.getenv("gemini_key")
 # Connect to the database
 conn= psycopg2.connect(f"user={USER} password={PASSWORD} host={HOST} port={PORT} dbname={DBNAME}")
 cursor = conn.cursor()
+
+genai.configure(api_key=GEMINIKEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 app = FastAPI()
  
@@ -24,6 +28,9 @@ def root():
  
 class Item(BaseModel):
     sql: str
+
+class Prompt(BaseModel):
+    prompt: str
 
 class CreateItem(BaseModel):
     sql: str
@@ -81,3 +88,9 @@ def CREATE_SEND(item : CreateItem) -> bool:
 @app.post("/commit")
 def COMMIT(item : Item):
     conn.commit()
+
+@app.post("/gemini_request")
+def GEMINI(item : Prompt):
+    # giving the master prompt and the prompt item
+    response = model.generate_content(f"Please explain what the list representation of our SQL commands will within 2 sentences: {item.prompt}")
+    return response.text
