@@ -108,13 +108,16 @@ export default function ProjectDetailPage() {
                         <CardDescription className="text-ui-navy-500 dark:text-ui-beige-300">Build out the SQL Tables in your project</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="bg-ui-beige-200 dark:bg-ui-navy-900 rounded-md p-8 flex flex-col items-center justify-center h-40">
-                            <p className="text-center text-ui-navy-600 dark:text-ui-beige-300">Table Builder Work In Progress</p>
+                        <div className="bg-ui-beige-200 dark:bg-ui-navy-900 rounded-md p-8 flex flex-col items-center justify-center h-40 space-y-3">
+                            <p className="text-center font-medium text-ui-navy-700 dark:text-ui-beige-200">No tables defined yet</p>
+                            <p className="text-center text-sm text-ui-navy-600 dark:text-ui-beige-300">
+                                Define your database schema by creating tables and relationships for your SQL queries
+                            </p>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button disabled className="w-full bg-ui-navy-700 text-white">
-                            Launch Query Builder
+                        <Button className="w-full bg-ui-navy-700 text-white" onClick={() => router.push("/setup")}>
+                            Setup Table Schema
                         </Button>
                     </CardFooter>
                 </Card>
