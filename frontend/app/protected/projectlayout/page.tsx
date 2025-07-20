@@ -13,7 +13,7 @@ export default async function ProtectedPage() {
     }
 
     return (
-        <div className="w-[95vw] h-[95vh]">
+        <div className="w-[95vw] h-[95vh] bg-ui-beige-100 p-4 rounded-lg">
             <BlockCanvas />
         </div>
     );
