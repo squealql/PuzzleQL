@@ -1,7 +1,7 @@
 "use client";
 import { redirect } from "next/navigation";
 import { useState } from "react";
-import { CodeBlockBase, SELECT, IdentifierInput } from "./blocks";
+import { CodeBlockBase, SELECT, IdentifierInput, Table, Equals } from "./blocks";
 import Canvas from "./Canvas";
 import React, { useRef } from "react";
 
@@ -11,7 +11,11 @@ export default function BlockCanvas() {
     const blocksRef = useRef<any[]>(blockslist);
     const toSQLRef = useRef<((block: any) => string) | null>(null);
     blockslist.push(new SELECT(700, 50));
-    blockslist.push(new IdentifierInput(700, 80));
+    blockslist.push(new IdentifierInput(700, 100));
+    blockslist.push(new Table(700, 150));
+    blockslist.push(new Equals(700, 200));
+    blockslist.push(new IdentifierInput(700, 250));
+    blockslist.push(new IdentifierInput(700, 300));
 
     return (
         <div className="bg-ui-beige-100 rounded-lg shadow-sm">
