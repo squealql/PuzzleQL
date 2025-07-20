@@ -40,6 +40,8 @@ Instead of writing raw SQL code, users build queries by connecting logical block
 - **Custom SQL Parser**: For validating and optimizing the generated SQL
 - **Supabase**: For storing user data and made queries
 
+![Tech Stack](./images/puzzleql-tech-stack.png)
+
 ## 🏗️ Architecture
 
 PuzzleQL follows a clean architecture pattern:
