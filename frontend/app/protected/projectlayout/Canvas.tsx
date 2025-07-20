@@ -2,6 +2,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as Blocks from "./blocks";
 
+// Add this at the top of the file, after imports
+// @ts-ignore
+declare global {
+  interface Window {
+    allblocks?: any;
+    toSQL?: (block: any) => string;
+  }
+}
+
 interface CanvasProps {
   shapes?: Blocks.CodeBlockBase[];
   width?: number;
@@ -11,16 +20,43 @@ interface CanvasProps {
 var currentButton = "CRUD";
 const buttonMap : {[key : string] : any[]} = {
   "CRUD"  : [new Blocks.SELECT(5,50), new Blocks.SELECT_DISTINCT(5,110), new Blocks.UPDATE(5,170), new Blocks.DELETE(5,230), new Blocks.DROP_TABLE(5,290), new Blocks.DROP_COLUMN(5,350)],
-  "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110), new Blocks.Table(5,170), new Blocks.ColumnReference(5,250)]
+  "Identifier"  : [new Blocks.WILDCARD(5,50), new Blocks.IdentifierInput(5,110), new Blocks.Table(5,170), new Blocks.ColumnReference(5,250)],
+  "Conditions"  : [new Blocks.Equals(5,50), new Blocks.LessThan(5,110), new Blocks.LessEqualTo(5, 170), new Blocks.GreaterThan(5,230), new Blocks.GreaterEqualTo(5,290), new Blocks.AND(5,350), new Blocks.OR(5,410), new Blocks.LIKE(5,470)],
+  "Operators"  : [
+    new Blocks.AddIdentifierExpr(5,50),
+    new Blocks.SubIdentifierExpr(5,110),
+    new Blocks.MultIdentifierExpr(5,170),
+    new Blocks.DivideIdentifierExpr(5,230)
+  ],
+  "Joins"  : [
+    new Blocks.Inner_Join(5,50),
+    new Blocks.Left_Join(5,110),
+    new Blocks.Right_Join(5,170),
+    new Blocks.Full_Outer_Join(5,230)
+  ]
 }
 
 // where these blocks would appear int
 const magnetMap: { [key: string]: string[] } = {
-  "IdentifierInput" : ["SELECT", "SELECT DISTINCT"],
-  "WILDCARD" : ["SELECT", "SELECT DISTINCT"],
-  "ColumnReference" : ["UPDATE", "DROP COLUMN", "LIKE"],
-  "Table" : ["SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE"],
+  "SELECT" : ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+  "IdentifierInput" : ["SELECT", "SELECT DISTINCT", "EQUALS", "ADD IDENTIFIER EXPR"],
+  "WILDCARD" : ["SELECT", "SELECT DISTINCT", "EQUALS", "ADD IDENTIFIER EXPR"],
+  "ColumnReference" : ["UPDATE", "DROP COLUMN", "LIKE", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+  "Table" : ["SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+  "EQUALS" : ["SELECT", "SELECT DISTINCT", "UPDATE", "AND"],
+  "LESS THAN": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND"],
+  "LESS EQUAL TO": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND"],
+  "GREATER THAN": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND", "OR", "LIKE"],
+  "GREATER EQUAL TO": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND", "OR", "LIKE"],
+  "AND": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND", "OR", "LIKE"],
+  "OR": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND", "OR", "LIKE"],
+  "LIKE": ["SELECT", "SELECT DISTINCT", "UPDATE", "AND", "OR"],
+  "ADD IDENTIFIER EXPR" : ["UPDATE", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO", "LIKE"],
+  "SUB IDENTIFIER EXPR" : ["UPDATE", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO", "LIKE"],
+  "MULT IDENTIFIER EXPR" : ["UPDATE", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO", "LIKE"],
+  "DIVIDE IDENTIFIER EXPR" : ["UPDATE", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO", "LIKE"]
 };
+
 
 // which boxes these things can replac
 const replaceMap: { [key: string]: string } = {
@@ -28,6 +64,20 @@ const replaceMap: { [key: string]: string } = {
   "WILDCARD" : "IdentifierBox",
   "Table" : "TableBox",
   "ColumnReference" : "ColumnReferenceBox",
+  "EQUALS" : "ConditionBox",
+  "LESS THAN": "ConditionBox",
+  "LESS EQUAL TO": "ConditionBox",
+  "GREATER THAN": "ConditionBox",
+  "GREATER EQUAL TO": "ConditionBox",
+  "AND": "ConditionBox",
+  "OR": "ConditionBox",
+  "LIKE": "ConditionBox",
+  "ADD IDENTIFIER EXPR" : "ExpressionBox",
+  "SUB IDENTIFIER EXPR" : "ExpressionBox",
+  "MULT IDENTIFIER EXPR" : "ExpressionBox",
+  "DIVIDE IDENTIFIER EXPR" : "ExpressionBox",
+  "SELECT" : "SELECTBox",
+  "SELECT DISTINCT" : "SELECTBox",
 };
 
 
@@ -39,7 +89,13 @@ const buttons = [
   new Blocks.BUTTON(240,10,"purple","Joins"),
 ]
 
-const compoundItems = ["SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE", "DROP COLUMN", "EQUALS", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO", "AND", "OR", "LIKE", "ADD", "SUB", "MUL", "DIV", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"]
+const compoundItems = [
+  "SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE", "DROP COLUMN",
+  "EQUALS", "LESS THAN", "LESS EQUAL TO", "GREATER THAN", "GREATER EQUAL TO",
+  "AND", "OR", "LIKE", "ADD IDENTIFIER EXPR","ADD", "SUB", "MUL", "DIV",
+  "SUB IDENTIFIER EXPR", "MULT IDENTIFIER EXPR", "DIVIDE IDENTIFIER EXPR",
+  "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"
+];
 
 const blockUpdate = (block : any) => {
       var max_y = block.y + block.h;
@@ -69,7 +125,13 @@ function displayBlock(ctx: any, block: any) {
     ctx.fillRect(block.x, block.y, block.w, block.h);
     ctx.fillStyle = "black";
     ctx.font = "18px Arial";
-    ctx.fillText(block.text, block.x, block.y);
+    ctx.fillText(block.text, block.x+7, block.y);
+  }else if (block.type == "SELECTBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
   }else if (block.type == "IdentifierBox") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
@@ -82,7 +144,7 @@ function displayBlock(ctx: any, block: any) {
     ctx.fillStyle = "white";
     ctx.font = "18px Arial";
     ctx.fillText(block.text, block.x+2, block.y+15);
-  }else if (block.type == "ExpresionBox") {
+  }else if (block.type == "ExpressionBox") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
     ctx.fillStyle = "white";
@@ -160,6 +222,7 @@ function deepCloneBlock(block: any): any {
 }
 
 export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasProps) {
+  var allblocks = [];
   const [blocks, setBlocks] = useState(shapes);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null); // <-- new state
@@ -177,7 +240,6 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
   }, [])
 
   const updateAll = () =>{
-    console.log("IT GOES OFF");
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, width, height);
@@ -212,7 +274,9 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
         displayBlock(ctx, block);
     });
     console.log(blocks)
-
+    allblocks = blocks;
+    window.allblocks = blocks; // <-- Add this line
+    window.toSQL = toSQL; // <-- Add this line
   };
 
   useEffect(() => {
@@ -260,6 +324,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     console.log(currentButton);
     var items = buttonMap[currentButton];
     for (let i = 0; i < items.length; i++){
+        blockUpdate(items[i]);
         displayBlock(ctx ,items[i]);
     }
   };
@@ -356,15 +421,15 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
       if (magnetoptions && magnetoptions.length > 0) {
         for (let ob = 0; ob < blocks.length; ob++) {
           const otherBlock: any = blocks[ob];
+          // Prevent merging a block into itself
+          if (b === ob) continue;
           if (magnetoptions.includes(otherBlock.type)) {
-            console.log("HOOOOOOOOOOO");
             if (otherBlock.content) {
               for (let i = 0; i < otherBlock.content.length; i++) {
                 const item = otherBlock.content[i];
                 if (item.type == replaceMap[block.type]) {
                     var eucdist = getDistance(item.x , item.y , block.x, block.y);
                     if (-50 < eucdist && eucdist < 50){
-                        console.log("EYYYYYYY");
                         block.x = otherBlock.x + block.w/2+10;
                         block.y = otherBlock.y - block.h/2;
                         otherBlock.content[i] = block;
@@ -380,7 +445,6 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
         }
       }
     }
-
   }
 
 
@@ -431,6 +495,25 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
       }
       return newBlocks;
     });
+  };
+  const toSQL = (block : any) => {
+    let returnstring = ""
+    if (block.content){
+      for (let i = 0; i < block.content.length; i++){
+        if (block.content[i].input){
+          returnstring += block.content[i].inpu;
+        }
+        else{
+          if (compoundItems.includes(block.content[i].type)){
+            returnstring += toSQL(block.content[i]);
+          }else{
+            returnstring += block.content[i].text;
+          }
+        }
+        returnstring += " ";
+      }
+    }
+    return returnstring;
   };
 
   return (

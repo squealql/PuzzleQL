@@ -18,12 +18,12 @@ export class CodeBlockBase {
 
 class RawText extends CodeBlockBase {
   text: string;
-  constructor(x: number, y: number, text: string) {
+  constructor(x: number, y: number, text: string, color?: string) {
     // Width: 20 + 13 * each character in text
-    const width = 20 + 10 * text.length;
+    const width = 20 + 12 * text.length;
     super(x, y, width, 20);
     this.type = "RawText";
-    this.color = "lightgrey";
+    this.color = color ?? "lightgrey";
     this.text = text;
   }
 }
@@ -71,7 +71,7 @@ export class IdentifierInput extends InputBox{
 export class ColumnReferenceBox extends SmallRawText{
   type: string;
   constructor(x: number, y: number) {
-    super(x, y, "<column_ref>");
+    super(x, y, "<column>");
     this.type = "ColumnReferenceBox"
     this.color="green"
   }
@@ -89,8 +89,8 @@ export class ExpressionBox extends SmallRawText{
   type: string;
   constructor(x: number, y: number) {
     super(x, y, "<expression>");
-    this.type = "ExpresionBox"
-    this.color="green"
+    this.type = "ExpressionBox"
+    this.color="red"
   }
 }
 
@@ -100,6 +100,14 @@ export class IdentifierBox extends SmallRawText{
     super(x, y, "<identifier>");
     this.type = "IdentifierBox"
     this.color="green"
+  }
+}
+export class SELECTBox extends SmallRawText{
+  type: string;
+  constructor(x: number, y: number) {
+    super(x, y, "<select>");
+    this.type = "SELECTBox"
+    this.color="lightgrey"
   }
 }
 
@@ -115,7 +123,7 @@ export class TableBox extends SmallRawText{
 export class ConditionBox extends SmallRawText{
   type: string;
   constructor(x: number, y: number) {
-    super(x, y, "<conditionbox>");
+    super(x, y, "<condition>");
     this.type = "ConditionBox"
     this.color="lightblue"
   }
@@ -246,7 +254,7 @@ export class WILDCARD extends CodeBlockBase {
     this.type = "WILDCARD";
     this.color = "green";
     this.text = "*";
-    const width = 20 + 10 * this.text.length;
+    const width = 20 + 12 * this.text.length;
     this.w = width;
   }
 }
@@ -256,5 +264,263 @@ export class DeleteBox extends CodeBlockBase {
     super(x, y, 500, 60);
     this.type = "DeleteBox";
     this.color = "#ff4444";
+  }
+}
+
+export class Equals extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    // Create children first
+    super(x, y, 200, 40);
+    const content = [
+      new IdentifierBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "=", "lightblue"),
+      new IdentifierBox(this.x+10, this.y+5),
+    ];
+    this.type = "EQUALS";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class LessThan extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ExpressionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "<", "lightblue"),
+      new ExpressionBox(this.x+10, this.y+5),
+    ];
+    this.type = "LESS THAN";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class LessEqualTo extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ExpressionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "<=", "lightblue"),
+      new ExpressionBox(this.x+10, this.y+5),
+    ];
+    this.type = "LESS EQUAL TO";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class GreaterThan extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ExpressionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, ">", "lightblue"),
+      new ExpressionBox(this.x+10, this.y+5),
+    ];
+    this.type = "GREATER THAN";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class GreaterEqualTo extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ExpressionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, ">=", "lightblue"),
+      new ExpressionBox(this.x+10, this.y+5),
+    ];
+    this.type = "GREATER EQUAL TO";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class AND extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ConditionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "AND", "lightblue"),
+      new ConditionBox(this.x+10, this.y+5),
+    ];
+    this.type = "AND";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class OR extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ConditionBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "OR", "lightblue"),
+      new ConditionBox(this.x+10, this.y+5),
+    ];
+    this.type = "OR";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class LIKE extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new ColumnReferenceBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "LIKE", "lightblue"),
+      new ExpressionBox(this.x+10, this.y+5),
+    ];
+    this.type = "LIKE";
+    this.color = "lightblue";
+    this.content = content;
+  }
+}
+
+export class AddIdentifierExpr extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new IdentifierBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "+", "red"),
+      new IdentifierBox(this.x+10, this.y+5),
+    ];
+    this.type = "ADD IDENTIFIER EXPR";
+    this.color = "red";
+    this.content = content;
+  }
+}
+
+export class SubIdentifierExpr extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new IdentifierBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "-", "red"),
+      new IdentifierBox(this.x+10, this.y+5),
+    ];
+    this.type = "SUB IDENTIFIER EXPR";
+    this.color = "red";
+    this.content = content;
+  }
+}
+
+export class MultIdentifierExpr extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new IdentifierBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "*", "red"),
+      new IdentifierBox(this.x+10, this.y+5),
+    ];
+    this.type = "MULT IDENTIFIER EXPR";
+    this.color = "red";
+    this.content = content;
+  }
+}
+
+export class DivideIdentifierExpr extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new IdentifierBox(this.x+10, this.y+5),
+      new RawText(this.x+10, this.y+5, "/", "red"),
+      new IdentifierBox(this.x+10, this.y+5),
+    ];
+    this.type = "DIVIDE IDENTIFIER EXPR";
+    this.color = "red";
+    this.content = content;
+  }
+}
+
+export class Inner_Join extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    // Create children first
+    super(x, y, 200, 40);
+    const content = [
+      new SELECTBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "INNER JOIN", "purple"),
+      new TableBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "ON", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+      new RawText(this.x+15, this.y+5, "=", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+    ];
+    this.type = "INNER JOIN";
+    this.color = "purple";
+    this.content = content;
+  }
+}
+
+export class Left_Join extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new SELECTBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "LEFT JOIN", "purple"),
+      new TableBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "ON", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+      new RawText(this.x+15, this.y+5, "=", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+    ];
+    this.type = "LEFT JOIN";
+    this.color = "purple";
+    this.content = content;
+  }
+}
+
+export class Right_Join extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new SELECTBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "RIGHT JOIN", "purple"),
+      new TableBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "ON", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+      new RawText(this.x+15, this.y+5, "=", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+    ];
+    this.type = "RIGHT JOIN";
+    this.color = "purple";
+    this.content = content;
+  }
+}
+
+export class Full_Outer_Join extends CodeBlockBase {
+  content: (RawText | IdentifierBox)[];
+  constructor(x: number, y: number) {
+    super(x, y, 200, 40);
+    const content = [
+      new SELECTBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "FULL OUTER JOIN", "purple"),
+      new TableBox(this.x+10, this.y+5),
+      new RawText(this.x+15, this.y+5, "ON", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+      new RawText(this.x+15, this.y+5, "=", "purple"),
+      new ColumnReferenceBox(this.x+20, this.y+5),
+    ];
+    this.type = "FULL OUTER JOIN";
+    this.color = "purple";
+    this.content = content;
   }
 }
