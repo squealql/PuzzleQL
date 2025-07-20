@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import BlockCanvas from "./blockcanvas";
+import Link from "next/link";
 
 export default async function ProtectedPage() {
     const blockslist = [];
@@ -13,8 +14,12 @@ export default async function ProtectedPage() {
     }
 
     return (
+        <div>
+
         <div className="w-[95vw] h-[95vh] bg-ui-beige-100 p-4 rounded-lg">
             <BlockCanvas />
+        </div>
+        <Link href="../../tables"/>
         </div>
     );
 }

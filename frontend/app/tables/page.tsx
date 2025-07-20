@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { PROJECT_NAME } from "@/lib/config";
 import { data } from "motion/react-client";
+import Link from "next/link";
 
 // --- TYPE DEFINITIONS FOR BACKEND RESPONSE ---
 
@@ -335,12 +336,12 @@ export default function SQLDataViewer() {
                             </a>
                         </div>
                         <div className="flex items-center gap-4">
-                            <button className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors duration-150 font-medium bg-ui-navy-700 hover:bg-ui-navy-600">
+                            <Link href="../protected/projectlayout" className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors duration-150 font-medium bg-ui-navy-700 hover:bg-ui-navy-600">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M4 4h6v6H4V4zm0 8h6v8H4v-8zm8-8h8v4h-8V4zm0 6h4v10h-4V10z" />
                                 </svg>
                                 Back to Blocks
-                            </button>
+                            </Link>
                             <ThemeSwitcher />
                         </div>
                     </div>

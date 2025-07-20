@@ -27,6 +27,12 @@ export default function HomePage() {
                                 <Link href="/projects" className="hover:text-ui-navy-500 dark:hover:text-white">
                                     Projects
                                 </Link>
+                                <Link href="/tables" className="hover:text-ui-navy-500 dark:hover:text-white">
+                                    Tables
+                                </Link>
+                                <Link href="/protected/projectlayout" className="hover:text-ui-navy-500 dark:hover:text-white">
+                                    SQL Builder
+                                </Link>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
