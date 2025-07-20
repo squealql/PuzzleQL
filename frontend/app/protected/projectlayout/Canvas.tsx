@@ -170,7 +170,7 @@ function displayBlock(ctx: any, block: any) {
   ctx.shadowOffsetY = 2;
   const borderRadius = 12;
   // Draw with rounded corners
-  if (block.type === "RawText" || block.type === "BUTTON" || block.type === "IdentifierBox" || block.type === "ColumnReferenceBox" || block.type === "ExpressionBox" || block.type === "TableBox" || block.type === "ConditionBox" || block.type === "WILDCARD" || block.type === "Table" || block.type === "IdentifierInput" || block.type === "ColumnReference") {
+  if (block.type === "RawText" || block.type === "BUTTON" || block.type === "IdentifierBox" || block.type === "ColumnReferenceBox" || block.type === "ExpressionBox" || block.type === "TableBox" || block.type === "ConditionBox" || block.type === "WILDCARD" || block.type === "Table" || block.type === "IdentifierInput" || block.type === "ColumnReference" || block.type === "SELECTBox") {
     ctx.fillStyle = block.color || "black";
     drawRoundedRect(ctx, block.x, block.y, block.w, block.h, borderRadius);
     ctx.fill();
