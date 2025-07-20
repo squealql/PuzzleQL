@@ -237,7 +237,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0, blocksRef, 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
   // Create a delete box that's always present
-  const deleteBox = new Blocks.DeleteBox(width - 620, height - 80);
+  const deleteBox = new Blocks.DeleteBox(width - 520, height - 80);
 
   useEffect(() => {
     for (let b = 0; b < blocks.length; b++)
@@ -304,7 +304,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0, blocksRef, 
 
   useEffect(() => {
     // Update delete box position when canvas dimensions change
-    deleteBox.x = width - 620;
+    deleteBox.x = width - 520;
     deleteBox.y = height - 80;
     updateAll();
   }, [blocks, width, height, currentButton]);
