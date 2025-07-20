@@ -2,6 +2,10 @@
 
 import React, { useState, useRef } from "react";
 import { Database, Table, Key, FileText, Upload, AlertCircle, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { PROJECT_NAME } from "@/lib/config";
+import Link from "next/link";
 
 // --- Enhanced Type Definitions ---
 interface Column {
@@ -465,30 +469,45 @@ const SQLTableVisualizer: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen" style={{ background: "hsl(var(--ui-beige-100))" }}>
+        <div className="min-h-screen bg-ui-beige-100 dark:bg-ui-navy-950">
+            <SiteHeader>
+                <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 bg-white dark:bg-ui-navy-900">
+                    <div className="w-full max-w-7xl flex justify-between items-center p-3 text-sm">
+                        <div className="flex items-center gap-4">
+                            <Link href="/" className="font-bold text-lg text-ui-navy-900 dark:text-white">
+                                {PROJECT_NAME}
+                            </Link>
+                            <div className="hidden md:flex items-center gap-4 text-ui-navy-700 dark:text-ui-beige-300">
+                                <Link href="/#features" className="hover:text-ui-navy-500 dark:hover:text-white">
+                                    Features
+                                </Link>
+                                <Link href="/projects" className="hover:text-ui-navy-500 dark:hover:text-white">
+                                    Projects
+                                </Link>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 text-ui-navy-900 dark:text-white">
+                            <Database className="w-5 h-5 text-ui-navy-400 dark:text-ui-navy-300" />
+                            <span>PostgreSQL Schema Visualizer</span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            {parsedSchema && (
+                                <button
+                                    onClick={handleSetupProject}
+                                    className="flex items-center gap-2 px-3 py-1 rounded-lg bg-ui-navy-700 text-white hover:bg-ui-navy-600 transition-colors"
+                                >
+                                    <Upload className="w-4 h-4" />
+                                    <span className="text-sm">Setup Project</span>
+                                </button>
+                            )}
+                            <ThemeSwitcher />
+                        </div>
+                    </div>
+                </nav>
+            </SiteHeader>
             <div className="container mx-auto px-4 py-8">
-                {/* Header */}
-                <div
-                    className="flex items-center justify-between mb-8"
-                    style={{ background: "hsl(var(--ui-navy-900))", color: "white", borderRadius: "0.5rem", padding: "1rem" }}
-                >
-                    <div className="flex items-center gap-3">
-                        <Database className="w-8 h-8" style={{ color: "hsl(var(--ui-navy-300))" }} />
-                        <h1 className="text-3xl font-bold">PostgreSQL Schema Visualizer</h1>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {parsedSchema && (
-                            <button
-                                onClick={handleSetupProject}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg"
-                                style={{ background: "hsl(var(--ui-navy-700))", color: "white" }}
-                            >
-                                <Upload className="w-4 h-4" />
-                                Setup Project
-                            </button>
-                        )}
-                    </div>
-                </div>
                 <div className="grid xl:grid-cols-3 gap-8">
                     {/* Input Section */}
                     <div className="xl:col-span-1 space-y-4">
