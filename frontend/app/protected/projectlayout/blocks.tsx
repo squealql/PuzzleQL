@@ -28,6 +28,17 @@ class RawText extends CodeBlockBase {
   }
 }
 
+class SmallRawText extends CodeBlockBase {
+  text: string;
+  constructor(x: number, y: number, text: string) {
+    // Width: 20 + 13 * each character in text
+    const width = 20 + 7 * text.length;
+    super(x, y, width, 20);
+    this.type = "RawText";
+    this.color = "lightgrey";
+    this.text = text;
+  }
+}
 export class Table extends CodeBlockBase{
   type: string;
   input: string;
@@ -97,41 +108,29 @@ export class ExpressionBox extends CodeBlockBase{
   }
 }
 
-export class IdentifierBox extends CodeBlockBase{
+export class IdentifierBox extends SmallRawText{
   type: string;
-  x: number;
-  y: number;
   constructor(x: number, y: number) {
-    super(x, y, 40, 20);
+    super(x, y, "<identifier>");
     this.type = "IdentifierBox"
-    this.x = x;
-    this.y = y;
     this.color="green"
   }
 }
 
-export class TableBox extends CodeBlockBase{
+export class TableBox extends SmallRawText{
   type: string;
-  x: number;
-  y: number;
   constructor(x: number, y: number) {
-    super(x, y, 40, 20);
+    super(x, y, "<table>");
     this.type = "TableBox"
-    this.x = x;
-    this.y = y;
     this.color="lightgreen"
   }
 }
 
-export class ConditionBox extends CodeBlockBase{
+export class ConditionBox extends SmallRawText{
   type: string;
-  x: number;
-  y: number;
   constructor(x: number, y: number) {
-    super(x, y, 40, 20);
-    this.type = "TableBox"
-    this.x = x;
-    this.y = y;
+    super(x, y, "<condition>");
+    this.type = "ConditionBox"
     this.color="lightblue"
   }
 }

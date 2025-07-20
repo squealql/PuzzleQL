@@ -17,7 +17,7 @@ const buttonMap : {[key : string] : any[]} = {
 // where these blocks would appear int
 const magnetMap: { [key: string]: string[] } = {
   "IdentifierInput" : ["SELECT", "SELECT DISTINCT"],
-  "Wildcard" : ["Equals", "SELECT", "SELECT DISTINCT"],
+  "WILDCARD" : ["SELECT", "SELECT DISTINCT"],
   "ColumnReference" : ["UPDATE", "DROP COLUMN", "LIKE"],
   "Table" : ["SELECT", "SELECT DISTINCT", "UPDATE", "DELETE", "DROP TABLE"],
 };
@@ -25,7 +25,7 @@ const magnetMap: { [key: string]: string[] } = {
 // which boxes these things can replac
 const replaceMap: { [key: string]: string } = {
   "IdentifierInput" : "IdentifierBox",
-  "Wildcard" : "IdentifierBox",
+  "WILDCARD" : "IdentifierBox",
   "Table" : "TableBox",
   "ColumnReference" : "ColumnReferenceBox",
 };
@@ -62,14 +62,40 @@ const blockUpdate = (block : any) => {
       }
 };
 
+
 function displayBlock(ctx: any, block: any) {
-  if (block.type == "RawText" || block.type == "WILDCARD") {
+  if (block.type == "RawText") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
     ctx.fillStyle = "black";
     ctx.font = "18px Arial";
     ctx.fillText(block.text, block.x, block.y);
-  } else if (block.type == "IdentifierBox") {
+  }else if (block.type == "IdentifierBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
+  }else if (block.type == "TableBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
+  }else if (block.type == "ConditionBox") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.fillText(block.text, block.x+2, block.y+15);
+  }else if (block.type == "WILDCARD") {
+    ctx.fillStyle = block.color || "black";
+    ctx.fillRect(block.x, block.y, block.w, block.h);
+    ctx.fillStyle = "white";
+    ctx.font = "24px Arial";
+    // Move the text position lower by increasing the y value (e.g., +15)
+    ctx.fillText(block.text, block.x+10, block.y + 20);
+  }else if (block.type == "IdentifierBox") {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
   } else if (compoundItems.includes(block.type)) {
@@ -86,6 +112,13 @@ function displayBlock(ctx: any, block: any) {
     ctx.fillStyle = block.color || "black";
     ctx.fillRect(block.x, block.y, block.w, block.h);
   }
+}
+
+// Deep clone utility for blocks
+function deepCloneBlock(block: any): any {
+  // If blocks have methods, consider implementing a .clone() method per class
+  // For now, this works for plain objects and arrays
+  return JSON.parse(JSON.stringify(block));
 }
 
 export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasProps) {
@@ -119,8 +152,9 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
     }
     // draw the options
     displayTag();
+    // draw a giant line
     ctx.fillStyle = "grey";
-    ctx.fillRect(350,0,5,width);
+    ctx.fillRect(480,0,5,width);
     
     // Draw the delete box
     ctx.fillStyle = deleteBox.color;
@@ -212,7 +246,7 @@ export default function Canvas({ shapes = [], width = 0, height = 0 }: CanvasPro
         if (x >= toolboxItem.x && x <= toolboxItem.x + toolboxItem.w &&
             y >= toolboxItem.y && y <= toolboxItem.y + toolboxItem.h) {
           // Clone the toolbox item and add it to blocks
-          const clonedItem = { ...toolboxItem };
+          const clonedItem = deepCloneBlock(toolboxItem);
           clonedItem.x = x - clonedItem.w / 2; // Center the clone on mouse position
           clonedItem.y = y - clonedItem.h / 2;
           setBlocks(prev => {
